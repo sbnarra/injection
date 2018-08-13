@@ -1,6 +1,14 @@
 package com.sbnarra.inject.registry;
 
-public interface Registry {
+import com.sbnarra.inject.aspect.Aspect;
+import lombok.RequiredArgsConstructor;
 
-     void register(Register register);
+import java.lang.reflect.ParameterizedType;
+
+@RequiredArgsConstructor
+public class Registry {
+
+     private final Registration<Class<?>> classes;
+     private final Registration<ParameterizedType> types;
+     private final Registration<Aspect> aspects;
 }

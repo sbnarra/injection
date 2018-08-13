@@ -12,7 +12,7 @@ public class Graph {
     private final List<Node> roots;
 
     public Graph construct(Register register) {
-        Graph graph = new Graph(new ArrayList<Node>());
+        Graph graph = new Graph(new ArrayList<>());
 
         return graph;
     }
