@@ -1,13 +1,12 @@
 package com.sbnarra.inject.resolver;
 
-import com.sbnarra.inject.meta.FieldMeta;
+import com.sbnarra.inject.meta.ObjectMeta;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 class FieldResolver {
 
-    List<FieldMeta> resolve(List<Field> fields) {
+    List<ObjectMeta> resolve(Class<?>[] fields) {
         // get all fields
         // check which are marked for injection
         // return meta for all fields

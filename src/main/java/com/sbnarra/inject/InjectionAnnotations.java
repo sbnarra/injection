@@ -44,6 +44,10 @@ public class InjectionAnnotations {
         return isAnnotation(annotation, inject);
     }
 
+    public List<Class<Annotation>> injectAnnotations() {
+        return inject;
+    }
+
     public InjectionAnnotations registerQualifier(Class<Annotation> annotationClass) {
         inject.add(annotationClass);
         return this;

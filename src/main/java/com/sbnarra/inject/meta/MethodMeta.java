@@ -6,5 +6,5 @@ import java.util.List;
 
 @Value
 public class MethodMeta {
-    private final List<FieldMeta> fields;
+    private final List<ObjectMeta> fields;
 }
