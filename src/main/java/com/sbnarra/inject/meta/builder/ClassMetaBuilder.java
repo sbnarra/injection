@@ -1,4 +1,4 @@
-package com.sbnarra.inject.resolver;
+package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.meta.ClassMeta;
@@ -7,11 +7,11 @@ import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 
 @RequiredArgsConstructor
-public class ClassResolver {
+class ClassMetaBuilder {
 
     private final ByteBuddy byteBuddy;
 
-    public <T> ClassMeta resolve(Type<T> type) throws InjectException {
+    <T> ClassMeta resolve(Type<T> type) throws InjectException {
         ClassMeta.ClassMetaBuilder builder = ClassMeta.builder();
         if (type.getParameterized() != null) {
             resolveType(type, builder);

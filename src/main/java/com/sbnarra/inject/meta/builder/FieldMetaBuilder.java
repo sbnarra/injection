@@ -1,10 +1,10 @@
-package com.sbnarra.inject.resolver;
+package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.meta.ObjectMeta;
 
 import java.util.List;
 
-class FieldResolver {
+class FieldMetaBuilder {
 
     List<ObjectMeta> resolve(Class<?>[] fields) {
         // get all fields

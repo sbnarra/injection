@@ -1,4 +1,4 @@
-package com.sbnarra.inject.resolver;
+package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.InjectionAnnotations;
@@ -10,15 +10,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 
 @RequiredArgsConstructor
-class ConstructorResolver {
+class ConstructorMetaBuilder {
     private final InjectionAnnotations injectionAnnotations;
-    private final FieldResolver fieldResolver;
+    private final FieldMetaBuilder fieldMetaBuilder;
 
     <T> ConstructorMeta resolve(ClassMeta classMeta) throws InjectException {
         Constructor<T> constructor = find(classMeta);
         return ConstructorMeta.<T>builder()
                 .constructor(constructor)
-                .fields(fieldResolver.resolve(constructor.getParameterTypes()))
+                .fields(fieldMetaBuilder.resolve(constructor.getParameterTypes()))
                 .build();
     }
 

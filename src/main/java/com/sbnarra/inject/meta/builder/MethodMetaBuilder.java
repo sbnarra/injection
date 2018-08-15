@@ -1,11 +1,11 @@
-package com.sbnarra.inject.resolver;
+package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.meta.ClassMeta;
 import com.sbnarra.inject.meta.MethodMeta;
 
 import java.util.List;
 
-class MethodResolver {
+class MethodMetaBuilder {
 
     List<MethodMeta> resolve(ClassMeta classMeta) {
         // get all methods

@@ -1,14 +1,15 @@
 package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.aspect.Aspect;
-import lombok.RequiredArgsConstructor;
 
-import java.lang.reflect.ParameterizedType;
+import com.sbnarra.inject.registry.binding.Binding;
+import lombok.Value;
 
-@RequiredArgsConstructor
+import java.util.ArrayList;
+import java.util.List;
+
+@Value
 public class Registry {
-
-     private final Registration<Class<?>> classes;
-     private final Registration<ParameterizedType> types;
-     private final Registration<Aspect> aspects;
+     private final List<Binding> bindings = new ArrayList<>();
+     private final List<Aspect> aspects = new ArrayList<>();
 }
