@@ -1,14 +1,12 @@
 package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.L;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.meta.AspectMeta;
 import com.sbnarra.inject.meta.ClassMeta;
 import com.sbnarra.inject.meta.ObjectMeta;
 import com.sbnarra.inject.registry.Binding;
 import com.sbnarra.inject.registry.Registry;
-import com.sbnarra.inject.registry.Type;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

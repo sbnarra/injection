@@ -1,6 +1,7 @@
 package com.sbnarra.inject;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,25 @@ public class InjectionAnnotations {
     public InjectionAnnotations registerNamed(Class<Annotation> annotationClass) {
         named.add(annotationClass);
         return this;
+    }
+
+    public String getName(Annotation[] annotations) throws InjectException {
+        for (Annotation annotation : annotations) {
+            for (Class<Annotation> annotationClass : named) {
+                if (annotationClass.isInstance(annotation)) {
+                    Object returned = null;
+                    try {
+                        returned = annotationClass.getDeclaredMethod("value").invoke(annotation);
+                    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                        throw new InjectException("error getting named value", e);
+                    }
+                    if (returned != null) {
+                        return returned.toString();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public InjectionAnnotations registerScope(Class<Annotation> annotationClass) {

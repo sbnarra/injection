@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 
 @RequiredArgsConstructor
@@ -12,7 +13,7 @@ import java.lang.reflect.InvocationHandler;
 @Getter
 @EqualsAndHashCode
 public class AnnotationBinding {
-    private final Class<?> annotationClass;
+    private final Class<? extends Annotation> annotationClass;
     private InterceptionContract interceptionContract;
 
     public InterceptionContract with(InvocationHandler invocationHandler) {

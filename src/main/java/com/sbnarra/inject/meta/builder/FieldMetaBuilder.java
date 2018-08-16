@@ -9,7 +9,6 @@ import com.sbnarra.inject.registry.Registry;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +21,14 @@ class FieldMetaBuilder {
     List<ObjectMeta> build(ClassMeta classMeta, Graph graph, Registry registry) throws InjectException {
         Class<?> bClass = classMeta.getContractClass();
         List<ObjectMeta> objectMetas = new ArrayList<>();
-        for (Field field : bClass.getDeclaredFields()) {
-            for (Class<Annotation> annotationClass : injectionAnnotations.injectAnnotations()) {
-                if (field.getAnnotation(annotationClass) != null) {
-                    ObjectMeta objectMeta = parametersMetaBuilder.getParameter(field.getDeclaringClass(), graph, registry);
+        INJECT_FIELD: for (Field field : bClass.getDeclaredFields()) {
+
+            for (Class<Annotation> injectAnnotationClass : injectionAnnotations.injectAnnotations()) {
+                if (field.getAnnotation(injectAnnotationClass) != null) {
+                    String named = injectionAnnotations.getName(field.getDeclaredAnnotations());
+                    ObjectMeta objectMeta = parametersMetaBuilder.getParameter(field.getDeclaringClass(), named, graph, registry);
                     objectMetas.add(objectMeta);
+                    continue INJECT_FIELD;
                 }
             }
         }

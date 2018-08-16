@@ -23,7 +23,7 @@ public class Graph {
     private final ObjectMetaBuilder objectMetaBuilder;
 
     public static Graph construct(Registry registry, InjectionAnnotations injectionAnnotations) throws InjectException {
-        Graph graph = new Graph(ObjectMetaBuilderFactory.get(injectionAnnotations));
+        Graph graph = new Graph(new ObjectMetaBuilderFactory(injectionAnnotations).get());
         for (Binding<?> binding : registry.getBindings()) {
             graph.addNode(binding, registry);
         }
@@ -31,7 +31,7 @@ public class Graph {
     }
 
     public DependencyNode addNode(Binding<?> binding, Registry registry) throws InjectException {
-        DependencyNode dependencyNode = find(binding.getType());
+        DependencyNode dependencyNode = find(binding.getType(), binding.getNamed());
         if (dependencyNode != null) {
             return dependencyNode;
         }
@@ -41,18 +41,18 @@ public class Graph {
         return dependencyNode;
     }
 
-    public <T> DependencyNode find(Type<T> type) {
+    public <T> DependencyNode find(Type<T> type, String named) {
         if (type.getParameterized() != null) {
-            return find(type.getParameterized().getRawType());
+            return find(type.getParameterized().getRawType(), named, rootNodes);
         }
-        return find(type.getClazz().getTheClass(), rootNodes);
+        return find(type.getClazz().getTheClass(), named, rootNodes);
     }
 
-    public <T> DependencyNode find(Class<T> tClass) {
-        return find(tClass, rootNodes);
+    public <T> DependencyNode find(Class<T> tClass, String named) {
+        return find(tClass, named, rootNodes);
     }
 
-    public <T> DependencyNode find(Class<T> tClass, Set<DependencyNode> nodes) {
+    public <T> DependencyNode find(Class<T> tClass, String named, Set<DependencyNode> nodes) {
         for (DependencyNode dependencyNode : nodes) {
             ObjectMeta objectMeta = dependencyNode.getObjectMeta();
             ClassMeta classMeta = objectMeta.getClassMeta();
@@ -62,9 +62,9 @@ public class Graph {
                 return dependencyNode;
             }
 
-            DependencyNode dependencyNode1 = find(tClass, dependencyNode.getDescendants());
-            if (dependencyNode1 != null) {
-                return dependencyNode1;
+            DependencyNode foundDependencyNode = find(tClass, named, dependencyNode.getDescendants());
+            if (foundDependencyNode != null) {
+                return foundDependencyNode;
             }
         }
         return null;

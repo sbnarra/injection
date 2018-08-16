@@ -40,8 +40,11 @@ public class Registry {
         return binding;
     }
 
-    public AnnotationBinding intercept(Class<?> annotationClass) {
-        AnnotationBinding annotationBinding = new AnnotationBinding(annotationClass);
+    public AnnotationBinding intercept(Class<?> annotationClass) throws InjectException {
+         if (!annotationClass.isAnnotation()) {
+             throw new InjectException(annotationClass + " is not an annotation");
+         }
+        AnnotationBinding annotationBinding = new AnnotationBinding(Annotation.class.getClass().cast(annotationClass));
         annotationBindings.add(annotationBinding);
         return annotationBinding;
     }

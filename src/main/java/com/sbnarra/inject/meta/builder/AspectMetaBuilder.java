@@ -1,5 +1,6 @@
 package com.sbnarra.inject.meta.builder;
 
+import com.sbnarra.inject.L;
 import com.sbnarra.inject.meta.AspectMeta;
 import com.sbnarra.inject.registry.AnnotationBinding;
 import com.sbnarra.inject.registry.InterceptionContract;
@@ -23,19 +24,16 @@ class AspectMetaBuilder {
     }
 
     private AspectMeta buildAspectMeta(Class<?> tClass, AnnotationBinding annotationBinding) {
-        AspectMeta aspectMeta = null;
         for (Method method : tClass.getDeclaredMethods()) {
             if (interceptMethod(method, annotationBinding)) {
-                if (aspectMeta == null) {
                     InterceptionContract interceptionContract = annotationBinding.getInterceptionContract();
-                    aspectMeta = AspectMeta.builder()
+                    return AspectMeta.builder()
+                            .annotationClass(annotationBinding.getAnnotationClass())
                             .invocationHandler(interceptionContract.getInvocationHandler())
                             .build();
-                }
-                aspectMeta.getMethods().add(method);
             }
         }
-        return aspectMeta;
+        return null;
     }
 
     private boolean interceptMethod(Method method, AnnotationBinding annotationBinding) {

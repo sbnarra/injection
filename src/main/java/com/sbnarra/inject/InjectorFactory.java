@@ -15,6 +15,6 @@ public class InjectorFactory {
     public static Injector create(InjectionAnnotations injectionAnnotations, Registration... registrations) throws InjectException {
         Registry registry = Registry.doRegistrations(Arrays.asList(registrations));
         Graph graph = Graph.construct(registry, injectionAnnotations);
-        return new DefaultInjector(graph);
+        return new DefaultInjector(registry, graph);
     }
 }

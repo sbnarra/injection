@@ -20,6 +20,7 @@ public class TestIt {
         System.out.println(r);
 
         System.out.println(injector.get(new Type<GenericObject<List<String>>>(){}));
+        System.out.println(injector.get(SimpleObject.class));
         r.doSomething();
     }
 

@@ -3,8 +3,6 @@ package com.sbnarra.inject.registry;
 import com.sbnarra.inject.InjectException;
 import lombok.Setter;
 
-import java.lang.annotation.Annotation;
-
 @Setter
 public abstract class Registration {
 
@@ -20,7 +18,7 @@ public abstract class Registration {
         return registry.bind(type);
     }
 
-    protected AnnotationBinding intercept(Class<?> annotationClass) {
+    protected AnnotationBinding intercept(Class<?> annotationClass) throws InjectException {
         return registry.intercept(annotationClass);
     }
 }

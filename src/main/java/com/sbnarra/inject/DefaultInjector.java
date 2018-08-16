@@ -4,6 +4,8 @@ import com.sbnarra.inject.graph.DependencyNode;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.meta.ConstructorMeta;
 import com.sbnarra.inject.meta.ObjectMeta;
+import com.sbnarra.inject.registry.Binding;
+import com.sbnarra.inject.registry.Registry;
 import com.sbnarra.inject.registry.Type;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -15,17 +17,21 @@ import java.util.List;
 @RequiredArgsConstructor
 class DefaultInjector implements Injector {
 
+    private final Registry registry;
     private final Graph graph;
 
     @Override
-    public <T> T get(Class<T> tClass) throws InjectException {
-        DependencyNode dependencyNode = graph.find(tClass);
+    public <T> T get(Class<T> tClass, String named) throws InjectException {
+        DependencyNode dependencyNode = graph.find(tClass,  named);
+        if (dependencyNode == null) {
+            dependencyNode = graph.addNode(new Binding<>(tClass).named(named).with(tClass).getBinding(), registry);
+        }
         return create(dependencyNode.getObjectMeta());
     }
 
     @Override
-    public <T> T get(Type<T> type) throws InjectException {
-        DependencyNode dependencyNode = graph.find(type);
+    public <T> T get(Type<T> type, String named) throws InjectException {
+        DependencyNode dependencyNode = graph.find(type, named);
         if (dependencyNode == null) {
             throw new InjectException("no binding found: " + type);
         }
