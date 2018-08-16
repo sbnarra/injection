@@ -17,7 +17,7 @@ public class InjectionAnnotations {
     private final List<Class<Annotation>> scope = new ArrayList<>();
     private final List<Class<Annotation>> singleton = new ArrayList<>();
 
-    private InjectionAnnotations newInstance() throws InjectException {
+    public static InjectionAnnotations newInstance() throws InjectException {
         return new InjectionAnnotations()
                 .registerInject(getAnnotation(JAVAX_INJECT))
                 .registerQualifier(getAnnotation(JAVAX_QUALIFIER))
@@ -26,22 +26,9 @@ public class InjectionAnnotations {
                 .registerSingleton(getAnnotation(JAVAX_SINGLETON));
     }
 
-    private boolean isAnnotation(Annotation annotation, List<Class<Annotation>> annotationClasses) {
-        for (Class<Annotation> annotationClass : annotationClasses) {
-            if (annotationClass.isInstance(annotation)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public InjectionAnnotations registerInject(Class<Annotation> annotationClass) {
         inject.add(annotationClass);
         return this;
-    }
-
-    public boolean isInject(Annotation annotation) {
-        return isAnnotation(annotation, inject);
     }
 
     public List<Class<Annotation>> injectAnnotations() {
@@ -49,42 +36,26 @@ public class InjectionAnnotations {
     }
 
     public InjectionAnnotations registerQualifier(Class<Annotation> annotationClass) {
-        inject.add(annotationClass);
+        qualifier.add(annotationClass);
         return this;
-    }
-
-    public boolean isQualifier(Annotation annotation) {
-        return isAnnotation(annotation, qualifier);
     }
 
     public InjectionAnnotations registerNamed(Class<Annotation> annotationClass) {
-        inject.add(annotationClass);
+        named.add(annotationClass);
         return this;
-    }
-
-    public boolean isNamed(Annotation annotation) {
-        return isAnnotation(annotation, named);
     }
 
     public InjectionAnnotations registerScope(Class<Annotation> annotationClass) {
-        inject.add(annotationClass);
+        scope.add(annotationClass);
         return this;
-    }
-
-    public boolean isScope(Annotation annotation) {
-        return isAnnotation(annotation, scope);
     }
 
     public InjectionAnnotations registerSingleton(Class<Annotation> annotationClass) {
-        inject.add(annotationClass);
+        singleton.add(annotationClass);
         return this;
     }
 
-    public boolean isSingleton(Annotation annotation) {
-        return isAnnotation(annotation, singleton);
-    }
-
-    private Class<Annotation> getAnnotation(String name) throws InjectException {
+    private static Class<Annotation> getAnnotation(String name) throws InjectException {
         Class<?> theClass;
         try {
             theClass = Class.forName(name);

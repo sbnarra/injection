@@ -15,6 +15,5 @@ public class ObjectMeta {
     private final ConstructorMeta constructorMeta;
     private final List<ObjectMeta> fieldMeta;
     private final List<MethodMeta> methodMeta;
-
     private final List<AspectMeta> aspectMeta;
 }

@@ -2,8 +2,11 @@ package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.InjectionAnnotations;
+import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.meta.ClassMeta;
 import com.sbnarra.inject.meta.ConstructorMeta;
+import com.sbnarra.inject.registry.Registry;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
@@ -12,15 +15,16 @@ import java.lang.reflect.Constructor;
 @RequiredArgsConstructor
 class ConstructorMetaBuilder {
     private final InjectionAnnotations injectionAnnotations;
-    private final FieldMetaBuilder fieldMetaBuilder;
+    private final ParametersMetaBuilder parametersMetaBuilder;
 
-    <T> ConstructorMeta resolve(ClassMeta classMeta) throws InjectException {
+    <T> ConstructorMeta build(ClassMeta classMeta, Graph graph, Registry registry) throws InjectException {
         Constructor<T> constructor = find(classMeta);
         return ConstructorMeta.<T>builder()
                 .constructor(constructor)
-                .fields(fieldMetaBuilder.resolve(constructor.getParameterTypes()))
+                .fields(parametersMetaBuilder.getParameters(constructor, graph, registry))
                 .build();
     }
+
 
     private <T> Constructor<T> find(ClassMeta classMeta) throws InjectException {
         if (classMeta.getBindClass() != classMeta.getBuildClass()) {
@@ -38,12 +42,12 @@ class ConstructorMetaBuilder {
                 }
             }
         }
-        throw new InjectException(buildClass + ": no inject annotation constructors, available inject annotations are: " + injectionAnnotations.injectAnnotations());
+        return noArgConstructor(buildClass);
     }
 
-    private <T> Constructor typedConstructorLookup(Class<T> bindClass, Class<?> buildClass) throws InjectException {
+    private <T> Constructor typedConstructorLookup(@NonNull Class<T> bindClass, @NonNull Class<?> buildClass) throws InjectException {
         Constructor<?>[] constructors = bindClass.getDeclaredConstructors();
-        for (int i = constructors.length; i > -1; i--) {
+        for (int i = constructors.length-1; i > -1; i--) {
             for (Class<Annotation> annotationClass : injectionAnnotations.injectAnnotations()) {
                 Constructor<?> constructor = constructors[i];
                 if (constructor.getAnnotation(annotationClass) != null) {
@@ -51,6 +55,14 @@ class ConstructorMetaBuilder {
                 }
             }
         }
-        throw new InjectException(bindClass + ": no inject annotation constructors, available inject annotations are: " + injectionAnnotations.injectAnnotations());
+       return noArgConstructor(buildClass);
+    }
+
+    private <T> Constructor noArgConstructor(Class<T> theClass) throws InjectException {
+        try {
+            return theClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new InjectException(theClass + ": no inject annotation constructors, available inject annotations are: " + injectionAnnotations.injectAnnotations());
+        }
     }
 }

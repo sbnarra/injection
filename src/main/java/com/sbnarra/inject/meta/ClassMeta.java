@@ -7,5 +7,6 @@ import lombok.Value;
 @Builder
 public class ClassMeta {
     private final Class<?> buildClass;
+    private final Class<?> contractClass;
     private final Class<?> bindClass;
 }

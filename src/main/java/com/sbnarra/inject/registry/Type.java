@@ -1,11 +1,11 @@
 package com.sbnarra.inject.registry;
 
+import com.sbnarra.inject.InjectException;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.Value;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -16,6 +16,10 @@ public abstract class Type<T> {
     public class Parameterized {
         private final java.lang.reflect.ParameterizedType type;
         private final List<Type<?>> generics = new ArrayList<>();
+
+        public java.lang.Class<?> getRawType() {
+            return (java.lang.Class<?>) type.getRawType();
+        }
     }
 
     @Value
@@ -32,14 +36,11 @@ public abstract class Type<T> {
     }
 
     public Type(java.lang.reflect.Type type) {
-        log("new supplied type: " + type);
         if (java.lang.reflect.ParameterizedType.class.isInstance(type)) {
-            log("Parameterized supplied type");
             this.clazz = null;
             this.parameterized = new Parameterized(java.lang.reflect.ParameterizedType.class.cast(type));
             gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
         } else if (java.lang.Class.class.isInstance(type)) {
-            log("Class supplied type");
             this.parameterized = null;
             this.clazz = new Class(java.lang.Class.class.cast(type));
         } else {
@@ -47,17 +48,16 @@ public abstract class Type<T> {
         }
     }
 
-    public Type() {
-        log("new runtime type: " + getClass() + ": " + java.lang.reflect.ParameterizedType.class.cast(getClass().getGenericSuperclass()));
+    public Type() throws InjectException {
         this.clazz = null;
 
-        // get this superclass
-        java.lang.reflect.Type genericSuperclass = getClass().getGenericSuperclass();
-        // get the single argument this Type accepts
+        java.lang.reflect.Type genericSuperclass = this.getClass().getGenericSuperclass();
         java.lang.reflect.Type typeParameter = java.lang.reflect.ParameterizedType.class.cast(genericSuperclass).getActualTypeArguments()[0];
-        // cast it to the correct ParameterizedType
+        if (!java.lang.reflect.ParameterizedType.class.isInstance(typeParameter)) {
+            throw new InjectException(getClass() + ": is not Parameterized");
+        }
         java.lang.reflect.ParameterizedType parameterizedTypeParameter = java.lang.reflect.ParameterizedType.class.cast(typeParameter);
-log(parameterizedTypeParameter);
+
         this.parameterized = new Parameterized(parameterizedTypeParameter);
         gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
     }
@@ -68,7 +68,10 @@ log(parameterizedTypeParameter);
         }
     }
 
-    private void log(Object... obj) {
-        System.out.println(Arrays.toString(obj));
+    public java.lang.Class<?> getTheClass() {
+        if (getParameterized() != null) {
+            return getParameterized().getRawType();
+        }
+        return getClazz().getTheClass();
     }
 }
