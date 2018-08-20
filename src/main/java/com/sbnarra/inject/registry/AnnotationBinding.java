@@ -1,22 +1,22 @@
 package com.sbnarra.inject.registry;
 
+import com.sbnarra.inject.aspect.Aspect;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
 
 @RequiredArgsConstructor
 @ToString
 @Getter
 @EqualsAndHashCode
-public class AnnotationBinding {
+public class AnnotationBinding extends Binding<AnnotationContract> {
     private final Class<? extends Annotation> annotationClass;
-    private InterceptionContract interceptionContract;
+    private AnnotationContract interceptionContract;
 
-    public InterceptionContract with(InvocationHandler invocationHandler) {
-        return interceptionContract = new InterceptionContract(this, invocationHandler);
+    public AnnotationContract with(Aspect aspect) {
+        return interceptionContract = new AnnotationContract(this, aspect);
     }
 }

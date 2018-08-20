@@ -1,21 +1,20 @@
 package com.sbnarra.inject.meta.builder;
 
-import com.sbnarra.inject.L;
-import com.sbnarra.inject.meta.AspectMeta;
+import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.registry.AnnotationBinding;
-import com.sbnarra.inject.registry.InterceptionContract;
+import com.sbnarra.inject.registry.AnnotationContract;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-class AspectMetaBuilder {
+class AspectBuilder {
 
-    List<AspectMeta> build(Class<?> tClass, List<AnnotationBinding> annotationBindings) {
-        List<AspectMeta> aspectMetas = new ArrayList<>();
+    List<Meta.Aspect> build(Class<?> tClass, List<AnnotationBinding> annotationBindings) {
+        List<Meta.Aspect> aspectMetas = new ArrayList<>();
         for (AnnotationBinding annotationBinding : annotationBindings) {
-            AspectMeta aspectMeta = buildAspectMeta(tClass, annotationBinding);
+            Meta.Aspect aspectMeta = buildAspectMeta(tClass, annotationBinding);
             if (aspectMeta != null) {
                 aspectMetas.add(aspectMeta);
             }
@@ -23,13 +22,13 @@ class AspectMetaBuilder {
         return aspectMetas;
     }
 
-    private AspectMeta buildAspectMeta(Class<?> tClass, AnnotationBinding annotationBinding) {
+    private Meta.Aspect buildAspectMeta(Class<?> tClass, AnnotationBinding annotationBinding) {
         for (Method method : tClass.getDeclaredMethods()) {
             if (interceptMethod(method, annotationBinding)) {
-                    InterceptionContract interceptionContract = annotationBinding.getInterceptionContract();
-                    return AspectMeta.builder()
+                    AnnotationContract interceptionContract = annotationBinding.getInterceptionContract();
+                    return Meta.Aspect.builder()
                             .annotationClass(annotationBinding.getAnnotationClass())
-                            .invocationHandler(interceptionContract.getInvocationHandler())
+                            .aspect(interceptionContract.getAspect())
                             .build();
             }
         }

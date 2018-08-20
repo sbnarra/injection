@@ -1,4 +1,4 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject.core;
 
 import com.sbnarra.inject.InjectException;
 import lombok.Getter;

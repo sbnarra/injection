@@ -1,16 +1,17 @@
 package com.sbnarra.inject.graph;
 
 import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.InjectionAnnotations;
-import com.sbnarra.inject.meta.ClassMeta;
-import com.sbnarra.inject.meta.ObjectMeta;
-import com.sbnarra.inject.meta.builder.ObjectMetaBuilder;
-import com.sbnarra.inject.meta.builder.ObjectMetaBuilderFactory;
+import com.sbnarra.inject.core.Annotations;
+import com.sbnarra.inject.core.Type;
+import com.sbnarra.inject.meta.Meta;
+import com.sbnarra.inject.meta.Qualifier;
+import com.sbnarra.inject.meta.builder.MetaBuilder;
+import com.sbnarra.inject.meta.builder.MetaBuilderFactory;
 import com.sbnarra.inject.registry.Registry;
-import com.sbnarra.inject.registry.Binding;
-import com.sbnarra.inject.registry.Type;
+import com.sbnarra.inject.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.Value;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,52 +20,63 @@ import java.util.Set;
 @ToString
 public class Graph {
 
-    private final Set<DependencyNode> rootNodes = new HashSet<>();
-    private final ObjectMetaBuilder objectMetaBuilder;
+    @Value
+    public class Node<T> {
+        private final Set<Node> ancestors = new HashSet<>();
+        private final Meta<T> meta;
+        private final Set<Node> descendants = new HashSet<>();
+    }
 
-    public static Graph construct(Registry registry, InjectionAnnotations injectionAnnotations) throws InjectException {
-        Graph graph = new Graph(new ObjectMetaBuilderFactory(injectionAnnotations).get());
-        for (Binding<?> binding : registry.getBindings()) {
-            graph.addNode(binding, registry);
+    private final Set<Node> rootNodes = new HashSet<>();
+    private final MetaBuilder metaBuilder;
+
+    public static Graph construct(Registry registry, Annotations annotations) throws InjectException {
+        Graph graph = new Graph(new MetaBuilderFactory().newInstance(annotations));
+        for (TypeBinding<?> typeBinding : registry.getTypeBindings()) {
+            graph.addNode(typeBinding, registry);
         }
         return graph;
     }
 
-    public DependencyNode addNode(Binding<?> binding, Registry registry) throws InjectException {
-        DependencyNode dependencyNode = find(binding.getType(), binding.getNamed());
-        if (dependencyNode != null) {
-            return dependencyNode;
+    public Node addNode(TypeBinding<?> typeBinding, Registry registry) throws InjectException {
+        Node node = find(typeBinding.getType(), typeBinding.getQualifier());
+        if (node != null) {
+            return node;
         }
 
-        ObjectMeta objectMeta = objectMetaBuilder.build(binding, this, registry);
-        rootNodes.add(dependencyNode = new DependencyNode(objectMeta));
-        return dependencyNode;
+        Meta meta = metaBuilder.build(typeBinding, this, registry);
+        rootNodes.add(node = new Node(meta));
+        return node;
     }
 
-    public <T> DependencyNode find(Type<T> type, String named) {
+    public <T> Node find(Type<T> type, Qualifier named) {
         if (type.getParameterized() != null) {
             return find(type.getParameterized().getRawType(), named, rootNodes);
         }
         return find(type.getClazz().getTheClass(), named, rootNodes);
     }
 
-    public <T> DependencyNode find(Class<T> tClass, String named) {
+    public <T> Node find(Class<T> tClass, Qualifier named) {
         return find(tClass, named, rootNodes);
     }
 
-    public <T> DependencyNode find(Class<T> tClass, String named, Set<DependencyNode> nodes) {
-        for (DependencyNode dependencyNode : nodes) {
-            ObjectMeta objectMeta = dependencyNode.getObjectMeta();
-            ClassMeta classMeta = objectMeta.getClassMeta();
+    private  <T> Node find(Class<T> tClass, Qualifier qualifier, Set<Node> nodes) {
+        for (Node node : nodes) {
+            Meta meta = node.getMeta();
+            if (qualifier != null && !qualifier.equals(meta.getQualifier())) {
+                    continue;
+            }
+
+            Meta.Class classMeta = meta.getClazz();
 
             Class<?> bindClass = classMeta.getBindClass();
             if (tClass.equals(bindClass)) {
-                return dependencyNode;
+                return node;
             }
 
-            DependencyNode foundDependencyNode = find(tClass, named, dependencyNode.getDescendants());
-            if (foundDependencyNode != null) {
-                return foundDependencyNode;
+            Node foundNode = find(tClass, qualifier, node.getDescendants());
+            if (foundNode != null) {
+                return foundNode;
             }
         }
         return null;

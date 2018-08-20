@@ -1,7 +1,8 @@
 package com.sbnarra.inject;
 
 public class Example {
-    public void myMethod() {
-        System.out.println("Example.myMethod");
+    public String myMethod(String hello) {
+        System.out.println("Example.myMethod2");
+        return hello;
     }
 }

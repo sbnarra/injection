@@ -1,12 +1,12 @@
 package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.InjectionAnnotations;
-import com.sbnarra.inject.graph.DependencyNode;
+import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.graph.Graph;
-import com.sbnarra.inject.meta.ObjectMeta;
-import com.sbnarra.inject.registry.Binding;
+import com.sbnarra.inject.meta.Meta;
+import com.sbnarra.inject.meta.Qualifier;
 import com.sbnarra.inject.registry.Registry;
+import com.sbnarra.inject.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
@@ -16,33 +16,26 @@ import java.util.List;
 
 @RequiredArgsConstructor
 class ParametersMetaBuilder {
-    private final InjectionAnnotations injectionAnnotations;
+    private final Annotations annotations;
 
-    List<ObjectMeta> getParameters(Executable executable, Graph graph, Registry registry) throws InjectException {
-        List<ObjectMeta> objectMetas = new ArrayList<>();
-
+    List<Meta> getParameters(Executable executable, Graph graph, Registry registry) throws InjectException {
+        List<Meta> metas = new ArrayList<>();
         Annotation[][] annotations = executable.getParameterAnnotations();
         Class<?>[] types = executable.getParameterTypes();
         for (int i = 0; i < executable.getParameterCount(); i++) {
-
             Class<?> type = types[i];
-            String named = injectionAnnotations.getName(annotations[i]);
-            objectMetas.add(getParameter(type, named, graph, registry));
+            String named = this.annotations.getName(annotations[i]);
+            metas.add(getParameter(type, new Qualifier.Named(named), graph, registry));
         }
-
-        for (Class<?> paramClass : executable.getParameterTypes()) {
-
-
-        }
-        return objectMetas;
+        return metas;
     }
 
-    ObjectMeta getParameter(Class<?> paramClass, String named, Graph graph, Registry registry) throws InjectException {
-        DependencyNode dependencyNode = graph.find(paramClass, named);
-        if (dependencyNode == null) {
-            Binding<?> binding = registry.find(paramClass);
-            dependencyNode = graph.addNode(binding, registry);
+    Meta getParameter(Class<?> paramClass, Qualifier qualifier, Graph graph, Registry registry) throws InjectException {
+        Graph.Node node = graph.find(paramClass, qualifier);
+        if (node == null) {
+            TypeBinding<?> typeBinding = registry.find(paramClass);
+            node = graph.addNode(typeBinding, registry);
         }
-        return dependencyNode.getObjectMeta();
+        return node.getMeta();
     }
 }

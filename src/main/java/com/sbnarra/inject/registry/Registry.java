@@ -1,63 +1,73 @@
 package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.aspect.Aspect;
+import com.sbnarra.inject.core.Type;
+import com.sbnarra.inject.meta.Scoped;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
 @ToString
 public class Registry {
-    private final List<AnnotationBinding> annotationBindings = new ArrayList<>();
-    private final List<Binding<?>> bindings = new ArrayList<>();
-     private final List<Aspect> aspects = new ArrayList<>();
 
-     private Registry() {
-     }
+    private final List<AnnotationBinding> interceptionBindings = new ArrayList<>();
+    private final List<TypeBinding<?>> typeBindings = new ArrayList<>();
+    private final List<ScopeBinding> scopeBindings = new ArrayList<>();
 
-     public static Registry doRegistrations(List<Registration> registers) throws InjectException {
-          Registry registry = new Registry();
-          for (Registration registration : registers) {
-              registration.setRegistry(registry);
-              registration.register();
-          }
-          return registry;
-     }
-
-    public <T> Binding<T> bind(Class<T> tClass) {
-        Binding<T> binding = new Binding<>(tClass);
-        bindings.add(binding);
-        return binding;
+    private Registry() {
     }
 
-    public <T> Binding<T> bind(Type<T> type) {
-        Binding<T> binding = new Binding<>(type);
-        bindings.add(binding);
-        return binding;
+    public static Registry registrate(Registration... registrations) throws InjectException {
+        return registrate(Arrays.asList(registrations));
     }
 
-    public AnnotationBinding intercept(Class<?> annotationClass) throws InjectException {
-         if (!annotationClass.isAnnotation()) {
-             throw new InjectException(annotationClass + " is not an annotation");
-         }
-        AnnotationBinding annotationBinding = new AnnotationBinding(Annotation.class.getClass().cast(annotationClass));
-        annotationBindings.add(annotationBinding);
+    public static Registry registrate(List<Registration> registrations) throws InjectException {
+        Registry registry = new Registry();
+        for (Registration registration : registrations) {
+            registration.setRegistry(registry);
+            registration.register();
+        }
+        return registry;
+    }
+
+    public <T> TypeBinding<T> bind(Class<T> tClass) {
+        TypeBinding<T> typeBinding = new TypeBinding<>(tClass);
+        typeBindings.add(typeBinding);
+        return typeBinding;
+    }
+
+    public <T> TypeBinding<T> bind(Type<T> type) {
+        TypeBinding<T> typeBinding = new TypeBinding<>(type);
+        typeBindings.add(typeBinding);
+        return typeBinding;
+    }
+
+    public ScopeBinding scoped(Scoped scoped) {
+        ScopeBinding scopeBinding = new ScopeBinding(scoped);
+        scopeBindings.add(scopeBinding);
+        return scopeBinding;
+    }
+
+    public AnnotationBinding intercept(Class<Annotation> annotationClass) {
+        AnnotationBinding annotationBinding = new AnnotationBinding(annotationClass);
+        interceptionBindings.add(annotationBinding);
         return annotationBinding;
     }
 
-    public Binding<?> find(Class<?> aClass) {
-         for (Binding<?> binding : bindings) {
-             Type<?> type = binding.getType();
-             if (type.getParameterized() != null && type.getParameterized().getRawType().equals(aClass)) {
-                return binding;
-             } else if (type.getClazz().getTheClass().equals(aClass)) {
-                return binding;
-             }
-         }
-         return null;
+    public TypeBinding<?> find(Class<?> aClass) {
+        for (TypeBinding<?> typeBinding : typeBindings) {
+            Type<?> type = typeBinding.getType();
+            if (type.getParameterized() != null && type.getParameterized().getRawType().equals(aClass)) {
+                return typeBinding;
+            } else if (type.getClazz().getTheClass().equals(aClass)) {
+                return typeBinding;
+            }
+        }
+        return null;
     }
 }
