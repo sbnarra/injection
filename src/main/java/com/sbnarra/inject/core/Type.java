@@ -22,35 +22,36 @@ public abstract class Type<T> {
         }
     }
 
-    @Value
-    public class Class {
-        private final java.lang.Class<?> theClass;
+    private final Parameterized parameterized;
+    private final java.lang.Class<?> theClass;
+
+    private Type(Parameterized parameterized, java.lang.Class theClass) {
+        this.theClass = theClass;
+        this.parameterized = parameterized;
     }
 
-    private final Parameterized parameterized;
-    private final Class clazz;
+    public Type(T instance) {
+        this(null, null);
+    }
 
     public Type(java.lang.Class theClass) {
-        this.clazz = new Class(theClass);
-        this.parameterized = null;
+        this(null, theClass);
     }
 
     public Type(java.lang.reflect.Type type) {
         if (java.lang.reflect.ParameterizedType.class.isInstance(type)) {
-            this.clazz = null;
+            this.theClass = null;
             this.parameterized = new Parameterized(java.lang.reflect.ParameterizedType.class.cast(type));
             gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
         } else if (java.lang.Class.class.isInstance(type)) {
             this.parameterized = null;
-            this.clazz = new Class(java.lang.Class.class.cast(type));
+            this.theClass = java.lang.Class.class.cast(type);
         } else {
             throw new RuntimeException("unknown type: " + type.getClass());
         }
     }
 
     public Type() throws InjectException {
-        this.clazz = null;
-
         java.lang.reflect.Type genericSuperclass = this.getClass().getGenericSuperclass();
         java.lang.reflect.Type typeParameter = java.lang.reflect.ParameterizedType.class.cast(genericSuperclass).getActualTypeArguments()[0];
         if (!java.lang.reflect.ParameterizedType.class.isInstance(typeParameter)) {
@@ -60,6 +61,7 @@ public abstract class Type<T> {
 
         this.parameterized = new Parameterized(parameterizedTypeParameter);
         gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
+        this.theClass = null;
     }
 
     private static void gatherGenerics(java.lang.reflect.ParameterizedType parameterizedType, List<Type<?>> generics) {
@@ -72,6 +74,6 @@ public abstract class Type<T> {
         if (getParameterized() != null) {
             return getParameterized().getRawType();
         }
-        return getClazz().getTheClass();
+        return theClass;
     }
 }

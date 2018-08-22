@@ -29,8 +29,8 @@ class ClassBuilder {
             parameterizedBuild(typeBinding.getContract().getType(), builder, aspectMetas);
         } else if (aspectMetas.size() == 0) {
             builder
-                    .buildClass(typeBinding.getContract().getType().getClazz().getTheClass())
-                    .contractClass(typeBinding.getContract().getType().getClazz().getTheClass());
+                    .buildClass(typeBinding.getContract().getType().getTheClass())
+                    .contractClass(typeBinding.getContract().getType().getTheClass());
         } else {
             buildWithAspects(typeBinding.getContract().getType(), builder, aspectMetas);
         }
@@ -46,7 +46,7 @@ class ClassBuilder {
     }
 
     private void buildWithAspects(Type<?> type, Meta.Class.ClassBuilder metaBuilder, List<Meta.Aspect> aspectMetas) {
-        DynamicType.Builder<?> builder = byteBuddy.subclass(type.getClazz().getTheClass());
+        DynamicType.Builder<?> builder = byteBuddy.subclass(type.getTheClass());
 
         Class builderClass = applyAspects(builder, aspectMetas).make()
                 .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)

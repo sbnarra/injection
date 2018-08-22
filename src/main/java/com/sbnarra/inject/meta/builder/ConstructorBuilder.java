@@ -2,9 +2,8 @@ package com.sbnarra.inject.meta.builder;
 
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.core.Annotations;
-import com.sbnarra.inject.graph.Graph;
+import com.sbnarra.inject.core.Context;
 import com.sbnarra.inject.meta.Meta;
-import com.sbnarra.inject.registry.Registry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -13,11 +12,11 @@ class ConstructorBuilder {
     private final Annotations annotations;
     private final ParametersMetaBuilder parametersMetaBuilder;
 
-    <T> Meta.Constructor build(Meta.Class classMeta, Graph graph, Registry registry) throws InjectException {
+    <T> Meta.Constructor build(Meta.Class classMeta, Context context) throws InjectException {
         java.lang.reflect.Constructor constructor = find(classMeta);
         return Meta.Constructor.<T>builder()
                 .constructor(constructor)
-                .fields(parametersMetaBuilder.getParameters(constructor, graph, registry))
+                .fields(parametersMetaBuilder.getParameters(constructor, context))
                 .build();
     }
 

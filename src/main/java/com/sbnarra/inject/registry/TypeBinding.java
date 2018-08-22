@@ -8,9 +8,10 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @Getter
-@ToString
+@ToString(callSuper = true)
 public class TypeBinding<T> extends Binding<TypeContract<T>> {
-    @EqualsAndHashCode.Include private final Type<T> type;
+    private final Type<T> type;
+    private T instance;
     private Qualifier qualifier;
 
     public TypeBinding(Type<T> type) {
@@ -19,6 +20,10 @@ public class TypeBinding<T> extends Binding<TypeContract<T>> {
 
     public TypeBinding(Class<T> aClass) {
         this(new Type<T>(aClass) {});
+    }
+
+    public void to(T instance) {
+        this.instance = instance;
     }
 
     public TypeContract<T> with(Type<? extends T> type) {

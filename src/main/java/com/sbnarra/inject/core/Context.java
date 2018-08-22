@@ -6,7 +6,6 @@ import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Qualifier;
 import com.sbnarra.inject.registry.Registry;
-import com.sbnarra.inject.registry.TypeBinding;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +20,7 @@ public class Context {
     private final ScopedContext scopedContext;
 
     public <T> T get(Class<T> tClass, Qualifier qualifier) throws InjectException {
-        Graph.Node<T> found = lookup(new Type<T>(tClass) {}, qualifier);
+        Graph.Node<T> found = lookup(tClass, qualifier);
         return internalGet(found.getMeta());
     }
 
@@ -37,11 +36,16 @@ public class Context {
         return constructInjected(meta);
     }
 
-    private <T> Graph.Node lookup(Type<T> theType, Qualifier qualifier) throws InjectException {
+    public <T> Graph.Node lookup(Class<T> tClass, Qualifier qualifier) throws InjectException {
+        return lookup(new Type<T>(tClass) {}, qualifier);
+    }
+
+    public <T> Graph.Node lookup(Type<T> theType, Qualifier qualifier) throws InjectException {
         Graph.Node node = graph.find(theType,  qualifier);
-        if (node == null) {
+        if (node == null) {// TODO and qualifier != null
             Debug.log("node not found, adding self-binding");
-            node = graph.addNode(new TypeBinding<>(theType).qualified(qualifier).with(theType).getBinding(), registry);
+            throw new InjectException(theType + ": node not found, adding self-binding");
+            //node = graph.addNode(new TypeBinding<>(theType).qualified(qualifier).with(theType).getBinding(), this);
         }
         Debug.log(node);
         return node;
@@ -92,5 +96,9 @@ public class Context {
             args[i] = construct(argMetas.get(i));
         }
         return args;
+    }
+
+    public Registry getRegistry() {
+        return registry;
     }
 }

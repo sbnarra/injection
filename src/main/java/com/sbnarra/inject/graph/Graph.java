@@ -1,7 +1,10 @@
 package com.sbnarra.inject.graph;
 
+import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.core.Annotations;
+import com.sbnarra.inject.core.Context;
+import com.sbnarra.inject.core.ScopedContext;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Qualifier;
@@ -30,21 +33,24 @@ public class Graph {
     private final Set<Node> rootNodes = new HashSet<>();
     private final MetaBuilder metaBuilder;
 
-    public static Graph construct(Registry registry, Annotations annotations) throws InjectException {
+    public static Context construct(Registry registry, Annotations annotations) throws InjectException {
         Graph graph = new Graph(new MetaBuilderFactory().newInstance(annotations));
+        ScopedContext scopedContext = new ScopedContext(registry, annotations);
+        Context context = new Context(registry, graph, scopedContext);
         for (TypeBinding<?> typeBinding : registry.getTypeBindings()) {
-            graph.addNode(typeBinding, registry);
+            Debug.log("constructing: " + typeBinding);
+            graph.addNode(typeBinding, context);
         }
-        return graph;
+        return context;
     }
 
-    public Node addNode(TypeBinding<?> typeBinding, Registry registry) throws InjectException {
+    public Node addNode(TypeBinding<?> typeBinding, Context context) throws InjectException {
         Node node = find(typeBinding.getType(), typeBinding.getQualifier());
         if (node != null) {
             return node;
         }
 
-        Meta meta = metaBuilder.build(typeBinding, this, registry);
+        Meta meta = metaBuilder.build(typeBinding, context);
         rootNodes.add(node = new Node(meta));
         return node;
     }
@@ -53,7 +59,7 @@ public class Graph {
         if (type.getParameterized() != null) {
             return find(type.getParameterized().getRawType(), named, rootNodes);
         }
-        return find(type.getClazz().getTheClass(), named, rootNodes);
+        return find(type.getTheClass(), named, rootNodes);
     }
 
     public <T> Node find(Class<T> tClass, Qualifier named) {
@@ -64,7 +70,7 @@ public class Graph {
         for (Node node : nodes) {
             Meta meta = node.getMeta();
             if (qualifier != null && !qualifier.equals(meta.getQualifier())) {
-                    continue;
+                continue;
             }
 
             Meta.Class classMeta = meta.getClazz();
@@ -79,6 +85,8 @@ public class Graph {
                 return foundNode;
             }
         }
+//        new Exception().printStackTrace();
+        Debug.log(tClass + " : " + nodes);
         return null;
     }
 }

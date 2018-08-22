@@ -12,6 +12,8 @@ public class Meta<T> {
     private final java.lang.Class<?> scoped;
     private final Qualifier qualifier;
 
+    private final T instance;
+
     private final Class<T> clazz;
     private final Constructor constructor;
     private final List<Field> field;

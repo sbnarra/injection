@@ -9,7 +9,7 @@ import lombok.ToString;
 import java.lang.annotation.Annotation;
 
 @RequiredArgsConstructor
-@ToString
+@ToString(callSuper = true)
 @Getter
 @EqualsAndHashCode
 public class AnnotationBinding extends Binding<AnnotationContract> {

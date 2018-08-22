@@ -3,7 +3,6 @@ package com.sbnarra.inject;
 import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.core.Context;
 import com.sbnarra.inject.core.DefaultInjector;
-import com.sbnarra.inject.core.ScopedContext;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.registry.Registration;
 import com.sbnarra.inject.registry.Registry;
@@ -16,10 +15,7 @@ public class InjectorFactory {
 
     public static Injector create(Annotations annotations, Registration... registrations) throws InjectException {
         Registry registry = Registry.registrate(registrations);
-        Graph graph = Graph.construct(registry, annotations);
-        ScopedContext scopedContext = new ScopedContext(registry, annotations);
-
-        Context context = new Context(registry, graph, scopedContext);
+        Context context = Graph.construct(registry, annotations);
         return new DefaultInjector(context);
     }
 }

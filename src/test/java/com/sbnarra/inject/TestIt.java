@@ -30,6 +30,7 @@ public class TestIt {
         public void register() throws InjectException {
             bind(new Type<List<String>>(){}).with(new Type<ArrayList<String>>(){});
             bind(new Type<GenericObject<String>>(){}).with(ConcreteGeneric.class).asSingleton();
+            bind(String.class).named("a").to("jkdfsjkdjkw");
 
 //            scoped(new Scoped(Arrays.asList((Class<Annotation>) MyAn.class)) {}).with(new ScopeHandler() {
 //                @Override

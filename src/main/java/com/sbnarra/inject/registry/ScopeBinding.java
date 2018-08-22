@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @RequiredArgsConstructor
-@ToString
+@ToString(callSuper = true)
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class ScopeBinding extends Binding<ScopeContract> {

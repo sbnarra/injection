@@ -19,7 +19,7 @@ public class MetaBuilderFactory {
                 createClassBuilder(byteBuddy),
                 createConstructorBuilder(annotations, parametersMetaBuilder),
                 createMethodBuilder(annotations, parametersMetaBuilder),
-                createFieldBuilder(annotations, parametersMetaBuilder),
+                createFieldBuilder(annotations),
                 createAspectBuilder());
     }
 
@@ -35,8 +35,8 @@ public class MetaBuilderFactory {
         return new MethodBuilder(annotations, parametersMetaBuilder);
     }
 
-    private FieldBuilder createFieldBuilder(Annotations annotations, ParametersMetaBuilder parametersMetaBuilder) {
-        return new FieldBuilder(annotations, parametersMetaBuilder);
+    private FieldBuilder createFieldBuilder(Annotations annotations) {
+        return new FieldBuilder(annotations);
     }
 
     private AspectBuilder createAspectBuilder() {

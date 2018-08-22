@@ -1,11 +1,11 @@
 package com.sbnarra.inject.meta.builder;
 
+import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.core.Annotations;
-import com.sbnarra.inject.graph.Graph;
+import com.sbnarra.inject.core.Context;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Qualifier;
-import com.sbnarra.inject.registry.Registry;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Field;
@@ -14,16 +14,18 @@ import java.util.List;
 
 @RequiredArgsConstructor
 class FieldBuilder {
-
     private final Annotations annotations;
-    private final ParametersMetaBuilder parametersMetaBuilder;
 
-    List<Meta.Field> build(Meta.Class classMeta, Graph graph, Registry registry) throws InjectException {
+    List<Meta.Field> build(Meta.Class classMeta, Context context) throws InjectException {
         Class bClass = classMeta.getContractClass();
         List<Meta.Field> metas = new ArrayList<>();
         for (Field field : bClass.getDeclaredFields()) {
             if (requiresInjection(field)) {
-                metas.add(createFieldMeta(field, graph, registry));
+                try {
+                    metas.add(createFieldMeta(field, context));
+                } catch (InjectException e) {
+                    throw new InjectException("failed to inject field: " + field, e);
+                }
             }
         }
         return metas;
@@ -38,9 +40,10 @@ class FieldBuilder {
         return false;
     }
 
-    private Meta.Field createFieldMeta(Field field, Graph graph, Registry registry) throws InjectException {
+    private Meta.Field createFieldMeta(Field field, Context context) throws InjectException {
         String named = annotations.getName(field.getDeclaredAnnotations());
-        Meta meta = parametersMetaBuilder.getParameter(field.getDeclaringClass(), new Qualifier.Named(named), graph, registry);
+        Debug.log("named: " + named);
+        Meta meta = context.lookup(field.getDeclaringClass(), new Qualifier.Named(named)).getMeta();
         return Meta.Field.builder()
                 .field(field)
                 .meta(meta)

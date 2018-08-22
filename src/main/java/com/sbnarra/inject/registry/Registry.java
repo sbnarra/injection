@@ -64,7 +64,7 @@ public class Registry {
             Type<?> type = typeBinding.getType();
             if (type.getParameterized() != null && type.getParameterized().getRawType().equals(aClass)) {
                 return typeBinding;
-            } else if (type.getClazz().getTheClass().equals(aClass)) {
+            } else if (type.getTheClass().equals(aClass)) {
                 return typeBinding;
             }
         }
