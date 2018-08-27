@@ -1,11 +1,11 @@
 package com.sbnarra.inject.context;
 
-import com.sbnarra.inject.Registry;
-import com.sbnarra.inject.ScopeBinding;
-import com.sbnarra.inject.ScopeContract;
 import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Scoped;
+import com.sbnarra.inject.registry.Registry;
+import com.sbnarra.inject.registry.ScopeBinding;
+import com.sbnarra.inject.registry.ScopeContract;
 import com.sbnarra.inject.scope.ScopeHandler;
 import com.sbnarra.inject.scope.ScopeHandlerException;
 import com.sbnarra.inject.scope.SingletonScopeHandler;
@@ -34,7 +34,7 @@ public class ScopedContext {
         }
     }
 
-    public <T> T get(Meta<T> meta, Context context) throws ContextException {
+    public <T> T get(Meta<T> meta, DefaultContext context) throws ContextException {
         try {
             return getScopeHandler(meta).get(meta, context);
         } catch (ScopeHandlerException e) {

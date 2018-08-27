@@ -6,6 +6,9 @@ import com.sbnarra.inject.context.ContextFactory;
 import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.core.AnnotationsException;
 import com.sbnarra.inject.core.DefaultInjector;
+import com.sbnarra.inject.registry.Registration;
+import com.sbnarra.inject.registry.Registry;
+import com.sbnarra.inject.registry.RegistryException;
 
 import java.util.Arrays;
 

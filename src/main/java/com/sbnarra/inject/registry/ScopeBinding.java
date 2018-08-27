@@ -1,4 +1,4 @@
-package com.sbnarra.inject;
+package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.meta.Scoped;
 import com.sbnarra.inject.scope.ScopeHandler;

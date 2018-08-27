@@ -22,7 +22,7 @@ class MethodBuilder {
                     method.setAccessible(true);
                     methodMetas.add(Meta.Method.builder()
                             .method(method)
-                            .fields(parametersMetaBuilder.getParameters(method, context))
+                            .parameters(parametersMetaBuilder.getParameters(method, context))
                             .build());
                 }
             }

@@ -1,12 +1,12 @@
 package com.sbnarra.inject.graph;
 
-import com.sbnarra.inject.TypeBinding;
 import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Qualifier;
 import com.sbnarra.inject.meta.builder.BuilderException;
 import com.sbnarra.inject.meta.builder.MetaBuilder;
+import com.sbnarra.inject.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -38,13 +38,10 @@ public class Graph {
     }
 
     public <T> Node find(Type<T> type, Qualifier named) {
-        if (type.getParameterized() != null) {
-            return find(type.getParameterized().getRawType(), named, rootNodes);
-        }
         return find(type.getTheClass(), named, rootNodes);
     }
 
-    private  <T> Node find(Class<T> tClass, Qualifier qualifier, Set<Node> nodes) {
+    private Node find(java.lang.reflect.Type tClass, Qualifier qualifier, Set<Node> nodes) {
         for (Node node : nodes) {
             Meta meta = node.getMeta();
             if (qualifier != null && !qualifier.equals(meta.getQualifier())) {

@@ -1,10 +1,10 @@
 master
-
-[![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=master)](https://travis-ci.org/sbnarra/injection)
+* Travis-CI: [![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=master)](https://travis-ci.org/sbnarra/injection)
+* Coveralls: [![Coverage Status](https://coveralls.io/repos/github/sbnarra/injection/badge.svg?branch=master)](https://coveralls.io/github/sbnarra/injection?branch=master)
 
 initial WIP
-
-[![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=initial_wip)](https://travis-ci.org/sbnarra/injection)
+* Travis-CI: [![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=initial_wip)](https://travis-ci.org/sbnarra/injection)
+* Coveralls: [![Coverage Status](https://coveralls.io/repos/github/sbnarra/injection/badge.svg?branch=initial_wip)](https://coveralls.io/github/sbnarra/injection?branch=initial_wip)
 
 ## flow
 

@@ -1,4 +1,4 @@
-package com.sbnarra.inject;
+package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.aspect.Aspect;
 import lombok.EqualsAndHashCode;

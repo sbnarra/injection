@@ -9,13 +9,16 @@ import java.util.List;
 @Value
 @Builder
 public class Meta<T> {
+
+    private final boolean useProvider;
+
     private final java.lang.Class<?> scoped;
     private final Qualifier qualifier;
 
     private final T instance;
 
     private final Class<T> clazz;
-    private final Constructor constructor;
+    private final Constructor<T> constructor;
     private final List<Field> field;
     private final List<Method> method;
     private final List<Aspect> aspect;
@@ -30,23 +33,30 @@ public class Meta<T> {
 
     @Value
     @Builder
+    public static class Parameter {
+        private final boolean useProvider;
+        private final Meta<?> meta;
+    }
+
+    @Value
+    @Builder
     public static class Constructor<T> {
         private final java.lang.reflect.Constructor<T> constructor;
-        private final List<Meta> fields;
+        private final List<Parameter> parameters;
     }
 
     @Value
     @Builder
     public static class Field {
         private final java.lang.reflect.Field field;
-        private final Meta meta;
+        private final Meta<?> meta;
     }
 
     @Value
     @Builder
     public static class Method {
         private final java.lang.reflect.Method method;
-        private final List<Meta> fields;
+        private final List<Parameter> parameters;
     }
 
     @Value

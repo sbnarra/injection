@@ -1,4 +1,4 @@
-package com.sbnarra.inject;
+package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Qualifier;
@@ -72,9 +72,7 @@ public class Registry {
             }
 
             Type<?> type = typeBinding.getType();
-            if (type.getParameterized() != null && type.getParameterized().getRawType().equals(aClass)) {
-                return typeBinding;
-            } else if (type.getTheClass().equals(aClass)) {
+            if (type.getTheClass().equals(aClass)) {
                 return typeBinding;
             }
         }

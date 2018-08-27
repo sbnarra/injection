@@ -1,76 +1,91 @@
 package com.sbnarra.inject.core;
 
-import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.UncheckedInjectException;
-import lombok.Getter;
 import lombok.ToString;
-import lombok.Value;
 
-import java.util.ArrayList;
+import javax.inject.Provider;
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-@Getter
 @ToString
 public abstract class Type<T> {
 
-    @Value
-    public class Parameterized {
-        private final java.lang.reflect.ParameterizedType type;
-        private final List<Type<?>> generics = new ArrayList<>();
+    private Parameterized parameterized;
+    private Class<T> theClass;
 
-        public java.lang.Class<?> getRawType() {
-            return (java.lang.Class<?>) type.getRawType();
-        }
-    }
-
-    private final Parameterized parameterized;
-    private final java.lang.Class<?> theClass;
-
-    private Type(Parameterized parameterized, java.lang.Class theClass) {
-        this.theClass = theClass;
+    private Type(Parameterized parameterized, Class<T> theClass) {
         this.parameterized = parameterized;
-    }
-
-    public Type(java.lang.Class theClass) {
-        this(null, theClass);
+        this.theClass = theClass;
     }
 
     public Type(java.lang.reflect.Type type) {
-        if (type instanceof java.lang.reflect.ParameterizedType) {
-            this.theClass = null;
-            this.parameterized = new Parameterized((java.lang.reflect.ParameterizedType) type);
-            gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
-        } else if (type instanceof Class) {
-            this.parameterized = null;
-            this.theClass = (Class) type;
+        if (Class.class.isInstance(type)) {
+            this.theClass = Class.class.cast(type);
+        } else if (ParameterizedType.class.isInstance(type)) {
+            this.parameterized = initType(type);
+        }
+    }
+
+    public Type() {
+        java.lang.reflect.Type thisType = ParameterizedType.class.cast(getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        if (Class.class.isInstance(thisType)) {
+            this.theClass = Class.class.cast(thisType);
+        } else if (ParameterizedType.class.isInstance(thisType)) {
+            this.parameterized = initType(thisType);
+        }
+    }
+
+    private static Parameterized initType(java.lang.reflect.Type type) {
+        if (Class.class.isInstance(type)) {
+            return handleClassType(Class.class.cast(type));
+        } else if (ParameterizedType.class.isInstance(type)) {
+            return handleParameterizedType(ParameterizedType.class.cast(type));
         } else {
             throw new RuntimeException("unknown type: " + type.getClass());
         }
     }
 
-    public Type() {
-        java.lang.reflect.Type genericSuperclass = this.getClass().getGenericSuperclass();
-        java.lang.reflect.Type typeParameter = ((java.lang.reflect.ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
-        if (!(typeParameter instanceof java.lang.reflect.ParameterizedType)) {
-            throw new UncheckedInjectException(new InjectException(getClass() + ": is not Parameterized"));
-        }
-        java.lang.reflect.ParameterizedType parameterizedTypeParameter = (java.lang.reflect.ParameterizedType) typeParameter;
-
-        this.parameterized = new Parameterized(parameterizedTypeParameter);
-        gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
-        this.theClass = null;
-    }
-
-    private static void gatherGenerics(java.lang.reflect.ParameterizedType parameterizedType, List<Type<?>> generics) {
-        for (java.lang.reflect.Type type : parameterizedType.getActualTypeArguments()) {
-            generics.add(new Type<Object>(type) {});
+    private static Parameterized handleClassType(Class<?> theClass) {
+        java.lang.reflect.Type genericSuperclass = theClass.getGenericSuperclass();
+        if (genericSuperclass == null) {
+            throw new RuntimeException(theClass + " has no generic supertype");
+        } else if (ParameterizedType.class.isInstance(genericSuperclass)) {
+            return handleParameterizedType(ParameterizedType.class.cast(genericSuperclass));
+        } else if (Class.class.isInstance(genericSuperclass)) {
+            throw new RuntimeException("unable to init class generic superclass: " + genericSuperclass);
+        } else {
+            throw new RuntimeException("unknown type: " + genericSuperclass.getClass());
         }
     }
 
-    public java.lang.Class<?> getTheClass() {
-        if (getParameterized() != null) {
-            return getParameterized().getRawType();
+    private static Parameterized handleParameterizedType(ParameterizedType parameterizedType) {
+        boolean isProvider = Provider.class.isAssignableFrom(Class.class.cast(parameterizedType.getRawType()));
+        Parameterized parameterized = new Parameterized(isProvider, parameterizedType);
+        for (java.lang.reflect.Type generic : parameterizedType.getActualTypeArguments()) {
+            List<Type<?>> generics = parameterized.getGenerics();
+            if (ParameterizedType.class.isInstance(generic)) {
+                generics.add(new Type<Object>(handleParameterizedType(ParameterizedType.class.cast(generic)), null) {});
+            } else if (Class.class.isInstance(generic)) {
+                generics.add(new Type<Object>(generic) {});
+            } else {
+                throw new RuntimeException("unknown type: " + generic.getClass());
+            }
         }
-        return theClass;
+        return parameterized;
+    }
+
+    public boolean isParameterized() {
+        return parameterized != null;
+    }
+
+    public java.lang.Class<T> getTheClass() {
+        return isParameterized() ? parameterized.getRawType() : theClass;
+    }
+
+    public boolean isProvider() {
+        return isParameterized() ? parameterized.isProvider() : false;
+    }
+
+    public Parameterized<T> getParameterized() {
+        return parameterized;
     }
 }

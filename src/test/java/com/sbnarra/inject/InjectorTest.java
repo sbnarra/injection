@@ -2,6 +2,8 @@ package com.sbnarra.inject;
 
 import com.sbnarra.inject.aspect.Aspect;
 import com.sbnarra.inject.core.Type;
+import com.sbnarra.inject.registry.Registration;
+import com.sbnarra.inject.registry.RegistryException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,19 +44,19 @@ public class InjectorTest {
         Injector injector = InjectorFactory.create(new Registration() {
             @Override
             public void register() {
-                bind(String.class).named(ExampleObject.NAME_1).to(strOne);
-                bind(String.class).named(ExampleObject.NAME_2).to(strTwo);
-                bind(String.class).named(ExampleObject.NAME_3).to(strThree);
+                bind(String.class).named(ExampleMembers.NAME_1).to(strOne);
+                bind(String.class).named(ExampleMembers.NAME_2).to(strTwo);
+                bind(String.class).named(ExampleMembers.NAME_3).to(strThree);
             }
         });
 
-        ExampleObject exampleObject = injector.get(ExampleObject.class);
-        Assertions.assertEquals(strOne, exampleObject.fieldParam);
-        Assertions.assertEquals(strTwo, exampleObject.constructorParam);
-        Assertions.assertEquals(strThree, exampleObject.methodParam);
+        ExampleMembers exampleMembers = injector.get(ExampleMembers.class);
+        Assertions.assertEquals(strOne, exampleMembers.fieldParam);
+        Assertions.assertEquals(strTwo, exampleMembers.constructorParam);
+        Assertions.assertEquals(strThree, exampleMembers.methodParam);
     }
 
-    private static class ExampleObject {
+    private static class ExampleMembers {
         public static final String NAME_1 = "name1", NAME_2 = "name2", NAME_3 = "name3";
         @Inject
         @Named(NAME_1)
@@ -62,13 +65,39 @@ public class InjectorTest {
         private final String constructorParam;
 
         @Inject
-        public ExampleObject(@Named(NAME_2) String constructorParam) {
+        public ExampleMembers(@Named(NAME_2) String constructorParam) {
             this.constructorParam = constructorParam;
         }
 
         @Inject
         public void setMethodParam(@Named(NAME_3) String methodParam) {
             this.methodParam = methodParam;
+        }
+    }
+
+    @Test
+    public void providerTest() throws InjectException {
+        Injector injector = InjectorFactory.create(new Registration() {
+            @Override
+            public void register() {
+                bind(List.class).with(ArrayList.class);
+            }
+        });
+
+        ExampleProvider exampleProvider = injector.get(ExampleProvider.class);
+        Assertions.assertEquals(ArrayList.class, exampleProvider.get().getClass());
+    }
+
+    public static class ExampleProvider {
+        private final Provider<List<String>> provider;
+
+        @Inject
+        public ExampleProvider(Provider<List<String>> provider) {
+            this.provider = provider;
+        }
+
+        public List get() {
+            return provider.get();
         }
     }
 

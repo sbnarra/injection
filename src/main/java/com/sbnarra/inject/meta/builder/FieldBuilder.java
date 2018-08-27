@@ -1,5 +1,6 @@
 package com.sbnarra.inject.meta.builder;
 
+import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.context.ContextException;
 import com.sbnarra.inject.core.Annotations;
@@ -38,16 +39,21 @@ class FieldBuilder {
     }
 
     private Meta.Field createFieldMeta(Field field, Context context) throws BuilderException {
-        String named;
+        Qualifier.Named named = null;
         try {
-            named = annotations.getName(field.getDeclaredAnnotations());
+            String nameStr = annotations.getName(field.getDeclaredAnnotations());
+            if (nameStr != null && !nameStr.isEmpty()) {
+                named = new Qualifier.Named(nameStr);
+            }
         } catch (AnnotationsException e) {
             throw new BuilderException("error finding field name: " + field, e);
         }
 
+        Debug.log(field);
+
         Node<?> node;
         try {
-            node = context.lookup(field.getType(), new Qualifier.Named(named));
+            node = context.lookup(field.getType(), named);
         } catch (ContextException e) {
             throw new BuilderException("error looking up field in context: " + field, e);
         }
