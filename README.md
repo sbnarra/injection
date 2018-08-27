@@ -1,3 +1,11 @@
+master
+
+[![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=master)](https://travis-ci.org/sbnarra/injection)
+
+initial WIP
+
+[![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=initial_wip)](https://travis-ci.org/sbnarra/injection)
+
 ## flow
 
 ### injector creation
@@ -11,12 +19,9 @@
 1. use object creator to build
 
 To-Do...
- * scoping - almost complete
- * interfacing - double check
- * provider/provides
+ * CI (travisci)
  * Coverage (coveralls)
- * CI (circleci)
+ * provider/provides
  * README.md
  * gh-pages
- 
- * central repo hosting?
+ * maven central
