@@ -1,12 +1,11 @@
 package com.sbnarra.inject.meta.builder;
 
-import com.sbnarra.inject.InjectException;
+import com.sbnarra.inject.TypeBinding;
 import com.sbnarra.inject.aspect.Aspect;
 import com.sbnarra.inject.aspect.AspectInvoker;
 import com.sbnarra.inject.aspect.Invoker;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
-import com.sbnarra.inject.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;
@@ -22,7 +21,13 @@ import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 class ClassBuilder {
     private final ByteBuddy byteBuddy;
 
-    <T> Meta.Class build(TypeBinding<T> typeBinding, List<Meta.Aspect> aspectMetas) throws InjectException {
+    <T> Meta.Class<T> build(TypeBinding<T> typeBinding) {
+        return Meta.Class.<T>builder()
+                .contractClass(typeBinding.getInstance().getClass())
+                .build();
+    }
+
+    <T> Meta.Class<T> build(TypeBinding<T> typeBinding, List<Meta.Aspect> aspectMetas) {
         Meta.Class.ClassBuilder builder = Meta.Class.builder().bindClass(typeBinding.getType().getTheClass());
 
         if (typeBinding.getContract().getType().getParameterized() != null) {

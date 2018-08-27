@@ -1,4 +1,4 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
 import com.sbnarra.inject.aspect.Aspect;
 import lombok.EqualsAndHashCode;
@@ -11,12 +11,11 @@ import java.lang.annotation.Annotation;
 @RequiredArgsConstructor
 @ToString(callSuper = true)
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class AnnotationBinding extends Binding<AnnotationContract> {
     private final Class<? extends Annotation> annotationClass;
-    private AnnotationContract interceptionContract;
 
     public AnnotationContract with(Aspect aspect) {
-        return interceptionContract = new AnnotationContract(this, aspect);
+        return setContract(new AnnotationContract(this, aspect));
     }
 }

@@ -1,4 +1,4 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

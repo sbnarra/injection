@@ -1,4 +1,4 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
 import com.sbnarra.inject.aspect.Aspect;
 import lombok.EqualsAndHashCode;
@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class AnnotationContract extends Contract<AnnotationBinding> {
     private final Aspect aspect;
 

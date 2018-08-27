@@ -1,4 +1,4 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Scoped;

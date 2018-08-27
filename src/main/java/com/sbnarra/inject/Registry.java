@@ -1,7 +1,7 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
-import com.sbnarra.inject.InjectException;
 import com.sbnarra.inject.core.Type;
+import com.sbnarra.inject.meta.Qualifier;
 import com.sbnarra.inject.meta.Scoped;
 import lombok.Getter;
 import lombok.ToString;
@@ -22,16 +22,17 @@ public class Registry {
     private Registry() {
     }
 
-    public static Registry registrate(Registration... registrations) throws InjectException {
+    public static Registry registrate(Registration... registrations) throws RegistryException {
         return registrate(Arrays.asList(registrations));
     }
 
-    public static Registry registrate(List<Registration> registrations) throws InjectException {
+    public static Registry registrate(List<Registration> registrations) throws RegistryException {
         Registry registry = new Registry();
         for (Registration registration : registrations) {
             registration.setRegistry(registry);
             registration.register();
         }
+        new RegistryValidator().validate(registry);
         return registry;
     }
 
@@ -59,8 +60,17 @@ public class Registry {
         return annotationBinding;
     }
 
-    public TypeBinding<?> find(Class<?> aClass) {
+
+    public TypeBinding<?> find(Type<?> type, Qualifier qualifier) {
+        return find(type.getTheClass(), qualifier);
+    }
+
+    public TypeBinding<?> find(Class<?> aClass, Qualifier qualifier) {
         for (TypeBinding<?> typeBinding : typeBindings) {
+            if (qualifier != null && !qualifier.equals(typeBinding.getQualifier())) {
+                continue;
+            }
+
             Type<?> type = typeBinding.getType();
             if (type.getParameterized() != null && type.getParameterized().getRawType().equals(aClass)) {
                 return typeBinding;

@@ -1,6 +1,6 @@
-package com.sbnarra.inject.registry;
+package com.sbnarra.inject;
 
-import com.sbnarra.inject.core.ScopeHandler;
+import com.sbnarra.inject.scope.ScopeHandler;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

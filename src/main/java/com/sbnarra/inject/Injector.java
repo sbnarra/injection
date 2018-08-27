@@ -21,7 +21,9 @@ public interface Injector {
         return get(tClass, new Qualifier.Named(named));
     }
 
-    <T> T get(Class<T> tClass, Qualifier qualifier) throws InjectException;
+    default <T> T get(Class<T> tClass, Qualifier qualifier) throws InjectException {
+        return get(new Type<T>(tClass) {}, qualifier);
+    }
 
     <T> T get(Type<T> tClass, Qualifier qualifier) throws InjectException;
 }

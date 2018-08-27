@@ -1,6 +1,7 @@
 package com.sbnarra.inject.core;
 
 import com.sbnarra.inject.InjectException;
+import com.sbnarra.inject.UncheckedInjectException;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.Value;
@@ -30,34 +31,30 @@ public abstract class Type<T> {
         this.parameterized = parameterized;
     }
 
-    public Type(T instance) {
-        this(null, null);
-    }
-
     public Type(java.lang.Class theClass) {
         this(null, theClass);
     }
 
     public Type(java.lang.reflect.Type type) {
-        if (java.lang.reflect.ParameterizedType.class.isInstance(type)) {
+        if (type instanceof java.lang.reflect.ParameterizedType) {
             this.theClass = null;
-            this.parameterized = new Parameterized(java.lang.reflect.ParameterizedType.class.cast(type));
+            this.parameterized = new Parameterized((java.lang.reflect.ParameterizedType) type);
             gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());
-        } else if (java.lang.Class.class.isInstance(type)) {
+        } else if (type instanceof Class) {
             this.parameterized = null;
-            this.theClass = java.lang.Class.class.cast(type);
+            this.theClass = (Class) type;
         } else {
             throw new RuntimeException("unknown type: " + type.getClass());
         }
     }
 
-    public Type() throws InjectException {
+    public Type() {
         java.lang.reflect.Type genericSuperclass = this.getClass().getGenericSuperclass();
-        java.lang.reflect.Type typeParameter = java.lang.reflect.ParameterizedType.class.cast(genericSuperclass).getActualTypeArguments()[0];
-        if (!java.lang.reflect.ParameterizedType.class.isInstance(typeParameter)) {
-            throw new InjectException(getClass() + ": is not Parameterized");
+        java.lang.reflect.Type typeParameter = ((java.lang.reflect.ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
+        if (!(typeParameter instanceof java.lang.reflect.ParameterizedType)) {
+            throw new UncheckedInjectException(new InjectException(getClass() + ": is not Parameterized"));
         }
-        java.lang.reflect.ParameterizedType parameterizedTypeParameter = java.lang.reflect.ParameterizedType.class.cast(typeParameter);
+        java.lang.reflect.ParameterizedType parameterizedTypeParameter = (java.lang.reflect.ParameterizedType) typeParameter;
 
         this.parameterized = new Parameterized(parameterizedTypeParameter);
         gatherGenerics(this.parameterized.getType(), this.parameterized.getGenerics());

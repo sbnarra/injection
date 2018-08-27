@@ -1,10 +1,9 @@
 package com.sbnarra.inject.meta.builder;
 
-import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.core.Context;
+import com.sbnarra.inject.TypeBinding;
+import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.meta.Qualifier;
-import com.sbnarra.inject.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -18,25 +17,27 @@ public class MetaBuilder {
     private final FieldBuilder fieldBuilder;
     private final AspectBuilder aspectBuilder;
 
-    public <T> Meta<T> build(TypeBinding<?> binding, Context context) throws InjectException {
+    public <T> Meta<T> build(TypeBinding<T> binding, Context context) throws BuilderException {
         try {
-            List<Meta.Aspect> aspectMetas = aspectBuilder.build(binding.getType().getTheClass(), context.getRegistry().getInterceptionBindings());
-            Meta.Class classMeta = classBuilder.build(binding, aspectMetas);
-            return Meta.<T>builder()
-                    .clazz(classMeta)
-                    .constructor(constructorBuilder.build(classMeta, context))
-
-                    .field(fieldBuilder.build(classMeta, context))
-                    .method(methodBuilder.build(classMeta, context))
-
-                    .aspect(aspectMetas)
-
+            Meta.MetaBuilder<T> builder = Meta.builder();
+            Meta.Class<T> classMeta;
+            if (binding.getInstance() != null) {
+                classMeta = classBuilder.build(binding);
+                builder.instance(binding.getInstance());
+            } else {
+                List<Meta.Aspect> aspectMetas = aspectBuilder.build(binding.getType().getTheClass(), context.getRegistry().getInterceptionBindings());
+                classMeta = classBuilder.build(binding, aspectMetas);
+                builder.constructor(constructorBuilder.build(classMeta, context))
+                        .field(fieldBuilder.build(classMeta, context))
+                        .method(methodBuilder.build(classMeta, context))
+                        .aspect(aspectMetas);
+            }
+            builder.clazz(classMeta)
                     .qualifier(getQualifier(binding, classMeta))
-                    .scoped(binding.getContract().getScopeAnnotation())
-
-                    .build();
-        } catch (InjectException e) {
-            throw new InjectException("failed to build: " + binding, e);
+                    .scoped(getScope(binding, classMeta));
+            return builder.build();
+        } catch (BuilderException e) {
+            throw new BuilderException("failed to build: " + binding, e);
         }
     }
 
@@ -45,18 +46,22 @@ public class MetaBuilder {
             return binding.getQualifier();
         }
 
-        // Todo - complete implementation
+        // Todo - complete implementation, scan call annotations
         classMeta.getContractClass().getAnnotations();
 
         return null;
     }
 
-    private Qualifier getScope(TypeBinding<?> binding, Meta.Class classMeta) {
-        if (binding.getQualifier() != null) {
-            return binding.getQualifier();
+    private Class<?> getScope(TypeBinding<?> binding, Meta.Class classMeta) {
+        if (binding.getContract() == null) {
+            return null;
         }
 
-        // Todo - complete implementation
+        if (binding.getContract().getScopeAnnotation() != null) {
+            return binding.getContract().getScopeAnnotation();
+        }
+
+        // Todo - complete implementation, scan call annotations
         classMeta.getContractClass().getAnnotations();
 
         return null;
