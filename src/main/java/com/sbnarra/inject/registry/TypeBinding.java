@@ -1,28 +1,29 @@
 package com.sbnarra.inject.registry;
 
+import com.sbnarra.inject.core.NamedAnnotation;
 import com.sbnarra.inject.core.Type;
-import com.sbnarra.inject.meta.Qualifier;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @ToString(callSuper = true)
-public class TypeBinding<T> extends Binding<TypeContract<T>> {
+public class TypeBinding<T> extends Binding<TypeContract<T>, TypeBinding<?>> {
     private final Type<T> type;
     private T instance;
-    private Qualifier qualifier;
+    private Annotation qualifier;
 
-    public TypeBinding(Type<T> type) {
+    public TypeBinding(Type<T> type, Collection<TypeBinding<?>> registryBindings) {
+        super(registryBindings);
         this.type = type;
     }
 
-    public TypeBinding(Class<T> aClass) {
-        this(new Type<T>(aClass) {});
-    }
-
     public void to(T instance) {
+        register();
         this.instance = instance;
     }
 
@@ -31,19 +32,20 @@ public class TypeBinding<T> extends Binding<TypeContract<T>> {
     }
 
     public TypeContract<T> with(Class<? extends T> aClass) {
-        return setContract(new TypeContract<>(this, new Type<T>(aClass) {}));
+        return setContract(new TypeContract(this, new Type<T>(aClass) {}));
     }
 
     public TypeBinding<T> named(String named) {
-        return qualified(new Qualifier.Named(named));
+        return qualified(new NamedAnnotation(named));
     }
 
-    public TypeBinding<T> qualified(Class<?> qualifierAnnotation) {
-        return qualified(new Qualifier.Annotated(qualifierAnnotation));
-    }
-
-    public TypeBinding<T> qualified(Qualifier qualifier) {
+    public TypeBinding<T> qualified(Annotation qualifier) {
         this.qualifier = qualifier;
         return this;
+    }
+
+    @Override
+    protected void register(Collection<TypeBinding<?>> registryBindings) {
+        registryBindings.add(this);
     }
 }

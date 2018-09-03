@@ -60,8 +60,8 @@ public abstract class Type<T> {
     private static Parameterized handleParameterizedType(ParameterizedType parameterizedType) {
         boolean isProvider = Provider.class.isAssignableFrom(Class.class.cast(parameterizedType.getRawType()));
         Parameterized parameterized = new Parameterized(isProvider, parameterizedType);
+        List<Type<?>> generics = parameterized.getGenerics();
         for (java.lang.reflect.Type generic : parameterizedType.getActualTypeArguments()) {
-            List<Type<?>> generics = parameterized.getGenerics();
             if (ParameterizedType.class.isInstance(generic)) {
                 generics.add(new Type<Object>(handleParameterizedType(ParameterizedType.class.cast(generic)), null) {});
             } else if (Class.class.isInstance(generic)) {

@@ -1,17 +1,18 @@
 package com.sbnarra.inject.context;
 
+import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.graph.GraphException;
 import com.sbnarra.inject.graph.Node;
 import com.sbnarra.inject.meta.Meta;
-import com.sbnarra.inject.meta.Qualifier;
 import com.sbnarra.inject.registry.Registry;
 import com.sbnarra.inject.registry.TypeBinding;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,7 @@ class DefaultContext implements Context {
 
     @Override
     public <T> T get(Meta<T> meta) throws ContextException {
-        if (meta.getScoped() != null) {
+        if (meta.getClazz().getInject().getScoped() != null) {
             return scopedContext.get(meta, this);
         }
         return construct(meta);
@@ -37,24 +38,35 @@ class DefaultContext implements Context {
     }
 
     @Override
-    public <T> Node lookup(Type<T> theType, Qualifier qualifier) throws ContextException {
+    public <T> Node lookup(Type<T> theType, Annotation qualifier) throws ContextException {
+
+        Debug.log("type: " + theType + " - qual: " + qualifier);
         Node node = graph.find(theType,  qualifier);
-        if (node == null) {
-            try {
-                if (qualifier == null) {
-                    node = graph.addNode(new TypeBinding<>(theType).with(theType).getBinding(), this);
-                } else {
-                    TypeBinding<?> typeBinding = registry.find(theType, qualifier);
-                    if (typeBinding == null) {
-                        throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
-                    }
-                    node = graph.addNode(typeBinding, this);
-                }
-            } catch (GraphException e) {
-                throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
-            }
+        if (node != null) {
+            Debug.log("node: " + node);
+            return node;
         }
-        return node;
+
+        try {
+            if (qualifier == null) {
+                return graph.addNode(selfBinding(theType), this);
+            }
+
+            TypeBinding<?> typeBinding = registry.find(theType, qualifier);
+            if (typeBinding == null) {
+                throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
+            }
+            Debug.log(typeBinding);
+            return graph.addNode(typeBinding, this);
+        } catch (GraphException e) {
+            throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
+        }
+    }
+
+    private <T> TypeBinding<T> selfBinding(Type<T> theType) {
+        return new TypeBinding<>(theType, getRegistry().getTypeBindings())
+                .with(theType)
+                .getBinding();
     }
 
     @Override

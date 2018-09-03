@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -142,6 +143,12 @@ public class InjectorTest {
 
         List<?> theList = injector.get(List.class);
         Assertions.assertEquals(theList, injector.get(List.class));
+
+        Assertions.assertEquals(injector.get(SingletonExample.class), injector.get(SingletonExample.class));
+    }
+
+    @Singleton
+    public static class SingletonExample {
     }
 
     @Test

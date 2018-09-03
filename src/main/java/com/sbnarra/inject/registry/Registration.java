@@ -1,7 +1,6 @@
 package com.sbnarra.inject.registry;
 
 import com.sbnarra.inject.core.Type;
-import com.sbnarra.inject.meta.Scoped;
 import lombok.Setter;
 
 import java.lang.annotation.Annotation;
@@ -25,7 +24,7 @@ public abstract class Registration {
         return registry.intercept(asAnnotation(annotationClass));
     }
 
-    protected ScopeBinding scoped(Scoped scoped) {
+    protected ScopeBinding scoped(Class<?> scoped) {
         return registry.scoped(scoped);
     }
 

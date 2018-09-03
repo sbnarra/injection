@@ -2,6 +2,7 @@ package com.sbnarra.inject.core;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import lombok.Value;
 
 import java.lang.reflect.ParameterizedType;
@@ -14,7 +15,7 @@ public class Parameterized<T> {
 
     private final boolean isProvider;
     private final ParameterizedType type;
-    private final List<Type<?>> generics = new ArrayList<Type<?>>();
+    @ToString.Exclude private final List<Type<?>> generics = new ArrayList<Type<?>>();
 
     public java.lang.Class<T> getRawType() {
         return (java.lang.Class<T>) type.getRawType();

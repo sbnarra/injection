@@ -1,14 +1,14 @@
 package com.sbnarra.inject.registry;
 
+import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.core.Type;
-import com.sbnarra.inject.meta.Qualifier;
-import com.sbnarra.inject.meta.Scoped;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @Getter
@@ -16,7 +16,7 @@ import java.util.List;
 public class Registry {
 
     private final List<AnnotationBinding> interceptionBindings = new ArrayList<>();
-    private final List<TypeBinding<?>> typeBindings = new ArrayList<>();
+    private final Collection<TypeBinding<?>> typeBindings = new ArrayList<>();
     private final List<ScopeBinding> scopeBindings = new ArrayList<>();
 
     private Registry() {
@@ -37,38 +37,34 @@ public class Registry {
     }
 
     public <T> TypeBinding<T> bind(Class<T> tClass) {
-        TypeBinding<T> typeBinding = new TypeBinding<>(tClass);
-        typeBindings.add(typeBinding);
-        return typeBinding;
+        return bind(new Type<T>(tClass) {});
     }
 
     public <T> TypeBinding<T> bind(Type<T> type) {
-        TypeBinding<T> typeBinding = new TypeBinding<>(type);
-        typeBindings.add(typeBinding);
-        return typeBinding;
+        return new TypeBinding<>(type, typeBindings);
     }
 
-    public ScopeBinding scoped(Scoped scoped) {
-        ScopeBinding scopeBinding = new ScopeBinding(scoped);
-        scopeBindings.add(scopeBinding);
-        return scopeBinding;
+    public ScopeBinding scoped(Class<?> scoped) {
+        return new ScopeBinding(scoped, scopeBindings);
     }
 
     public AnnotationBinding intercept(Class<Annotation> annotationClass) {
-        AnnotationBinding annotationBinding = new AnnotationBinding(annotationClass);
-        interceptionBindings.add(annotationBinding);
-        return annotationBinding;
+        return new AnnotationBinding(annotationClass, interceptionBindings);
     }
 
-
-    public TypeBinding<?> find(Type<?> type, Qualifier qualifier) {
+    public TypeBinding<?> find(Type<?> type, Annotation qualifier) {
         return find(type.getTheClass(), qualifier);
     }
 
-    public TypeBinding<?> find(Class<?> aClass, Qualifier qualifier) {
+    public TypeBinding<?> find(Class<?> aClass, Annotation qualifier) {
+        Debug.log("find: " + aClass + " - " + qualifier);
         for (TypeBinding<?> typeBinding : typeBindings) {
-            if (qualifier != null && !qualifier.equals(typeBinding.getQualifier())) {
-                continue;
+            Debug.log(typeBinding);
+            if (qualifier != null) {
+                if (typeBinding.getQualifier() == null || !qualifier.annotationType().equals(typeBinding.getQualifier().annotationType())) {
+                    Debug.log("continue: " + typeBinding);
+                    continue;
+                }
             }
 
             Type<?> type = typeBinding.getType();
@@ -76,6 +72,7 @@ public class Registry {
                 return typeBinding;
             }
         }
+        Debug.log("find:null");
         return null;
     }
 }

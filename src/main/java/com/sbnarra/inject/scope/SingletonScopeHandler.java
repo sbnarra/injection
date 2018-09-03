@@ -4,11 +4,16 @@ import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.context.ContextException;
 import com.sbnarra.inject.meta.Meta;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SingletonScopeHandler implements ScopeHandler {
-    private final Map<Meta, Object> singletons = new HashMap<>();
+    private final Map<Meta, Object> singletons = new ConcurrentHashMap<>();
+
+    @Override
+    public void destoryScope() throws ScopeHandlerException {
+        singletons.clear();
+    }
 
     @Override
     public <T> T get(Meta<T> meta, Context context) throws ScopeHandlerException {

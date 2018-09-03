@@ -1,16 +1,19 @@
 package com.sbnarra.inject.registry;
 
+import com.sbnarra.inject.ThreadLocal;
 import com.sbnarra.inject.core.Type;
-import com.sbnarra.inject.meta.Scoped;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import javax.inject.Singleton;
+import java.lang.annotation.Annotation;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @Getter
 public class TypeContract<T> extends Contract<TypeBinding<T>> {
-    private Class<?> scopeAnnotation;
+    private Annotation scoped;
 
     private final Type<? extends T> type;
     private final T instance;
@@ -30,14 +33,21 @@ public class TypeContract<T> extends Contract<TypeBinding<T>> {
     }
 
     public void asSingleton() {
-        scopedAs(Scoped.Singleton.class);
+        scopedAs(() -> Singleton.class);
     }
 
     public void asThreadLocal() {
-        scopedAs(Scoped.ThreadLocal.class);
+        scopedAs(() -> ThreadLocal.class);
     }
 
-    public void scopedAs(Class<?> scopeAnnotation) {
-        this.scopeAnnotation = scopeAnnotation;
+    public void scopedAs(Class<?> scopeAnnotation) throws RegistryException {
+        if (!scopeAnnotation.isAnnotation()) {
+            throw new RegistryException(scopeAnnotation + ": is not annotation");
+        }
+        scopedAs(() -> (Class<? extends Annotation>) scopeAnnotation);
+    }
+
+    public void scopedAs(Annotation scopeAnnotation) {
+        this.scoped = scopeAnnotation;
     }
 }

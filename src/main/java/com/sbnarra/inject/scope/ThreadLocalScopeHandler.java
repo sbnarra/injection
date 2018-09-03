@@ -12,6 +12,11 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
     private final ThreadLocal<Map<Meta<?>, Object>> threadLocals = new ThreadLocal<>();
 
     @Override
+    public void destoryScope() throws ScopeHandlerException {
+        threadLocals.remove();
+    }
+
+    @Override
     public <T> T get(Meta<T> meta, Context context) throws ScopeHandlerException {
         Map<Meta<?>, Object> map = getMap();
 
@@ -40,9 +45,7 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
     private Map<Meta<?>, Object> getMap() {
         Map<Meta<?>, Object> theMap = threadLocals.get();
         if (theMap == null) {
-            synchronized (threadLocals) {
-                threadLocals.set(theMap = new HashMap<>());
-            }
+            threadLocals.set(theMap = new HashMap<>());
         }
         return theMap;
     }

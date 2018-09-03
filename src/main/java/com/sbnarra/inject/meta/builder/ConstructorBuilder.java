@@ -4,17 +4,20 @@ import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.meta.Meta;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 
-@RequiredArgsConstructor
-class ConstructorBuilder {
-    private final Annotations annotations;
+class ConstructorBuilder extends AbstractBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
-    <T> Meta.Constructor build(Meta.Class classMeta, Context context) throws BuilderException {
-        java.lang.reflect.Constructor<T> constructor = find(classMeta);
+    ConstructorBuilder(Annotations annotations, ParametersMetaBuilder parametersMetaBuilder) {
+        super(annotations);
+        this.parametersMetaBuilder = parametersMetaBuilder;
+    }
+
+    <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context) throws BuilderException {
+        Constructor<T> constructor = find(classMeta);
         List<Meta.Parameter> fieldMeta = parametersMetaBuilder.getParameters(constructor, context);
 
         constructor.setAccessible(true);
@@ -25,43 +28,49 @@ class ConstructorBuilder {
     }
 
 
-    private <T> java.lang.reflect.Constructor<T> find(Meta.Class classMeta) throws BuilderException {
-        if (classMeta.getBindClass() != classMeta.getBuildClass()) {
-            return typedConstructorLookup(classMeta.getBindClass(), classMeta.getBuildClass());
+    private <T> Constructor<T> find(Meta.Class<T> classMeta) throws BuilderException {
+        Class<?> bindClass = classMeta.getBindClass();
+        Class<T> buildClass = classMeta.getBuildClass();
+
+        if (bindClass != buildClass) {
+            return typedConstructorLookup(bindClass, buildClass);
         } else {
-            return constructorLookup(classMeta.getBuildClass());
-        }
-    }
-
-    private <T> java.lang.reflect.Constructor<T> constructorLookup(Class buildClass) throws BuilderException {
-        for(java.lang.reflect.Constructor constructor : buildClass.getDeclaredConstructors()) {
-            for (Class annotationClass : annotations.getInject()) {
-                if (constructor.getAnnotation(annotationClass) != null) {
-                    return constructor;
-                }
+            List<Constructor<?>> constructors = findInject(buildClass.getDeclaredConstructors());
+            if (constructors.size() == 0) {
+                return noArgConstructor(buildClass);
+            } else if (constructors.size() > 1) {
+                throw new BuilderException("multiple inject constructors");
             }
+            return getTypeSafeConstructor(buildClass, constructors.get(0));
         }
-        return noArgConstructor(buildClass);
     }
 
-    private <T> java.lang.reflect.Constructor<T> typedConstructorLookup(@NonNull Class bindClass, @NonNull Class buildClass) throws BuilderException {
-        java.lang.reflect.Constructor[] constructors = bindClass.getDeclaredConstructors();
-        for (int i = constructors.length-1; i > -1; i--) {
-            for (Class annotationClass : annotations.getInject()) {
-                java.lang.reflect.Constructor constructor = constructors[i];
-                if (constructor.getAnnotation(annotationClass) != null) {
-                    return buildClass.getDeclaredConstructors()[i];
-                }
-            }
+    private <T> Constructor<T> typedConstructorLookup(@NonNull Class<?> bindClass, @NonNull Class<T> buildClass) throws BuilderException {
+        Constructor<?>[] constructors = bindClass.getDeclaredConstructors();
+        List<Integer> injectIndexes = findInjectIndexes(constructors);
+        if (injectIndexes.size() == 0) {
+            return noArgConstructor(buildClass);
+        } else if (injectIndexes.size() > 1) {
+            throw new BuilderException("multiple inject constructors on " + bindClass);
         }
-       return noArgConstructor(buildClass);
+
+        Constructor<?> constructor = buildClass.getDeclaredConstructors()[constructors.length - injectIndexes.get(0)];
+        return getTypeSafeConstructor(buildClass, constructor);
     }
 
-    private <T> java.lang.reflect.Constructor<T> noArgConstructor(Class theClass) throws BuilderException {
+    private <T> Constructor<T> getTypeSafeConstructor(Class<T> theClass, Constructor<?> constructor) throws BuilderException {
+        try {
+            return theClass.getDeclaredConstructor(constructor.getParameterTypes());
+        } catch (NoSuchMethodException e) {
+            throw new BuilderException("failed to create type safe constructor", e);
+        }
+    }
+
+    private <T> Constructor<T> noArgConstructor(Class<T> theClass) throws BuilderException {
         try {
             return theClass.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new BuilderException(theClass + ": missing no-arg or inject annotated constructors, available inject annotations are: " + annotations.getInject());
+            throw new BuilderException(theClass + ": missing no-arg or inject annotated constructors");
         }
     }
 }
