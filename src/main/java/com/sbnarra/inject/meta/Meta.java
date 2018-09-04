@@ -30,7 +30,7 @@ public class Meta<T> {
     @Builder
     public static class Class<T> {
         @NonNull private final Inject inject;
-        private final java.lang.Class<T> buildClass;
+        private final java.lang.Class<? extends T> buildClass;
         private final java.lang.Class<?> contractClass;
         private final java.lang.Class<?> bindClass;
     }

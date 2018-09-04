@@ -4,17 +4,14 @@ import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.meta.Meta;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-class ConstructorBuilder extends AbstractBuilder {
+@RequiredArgsConstructor
+class ConstructorBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
-
-    ConstructorBuilder(Annotations annotations, ParametersMetaBuilder parametersMetaBuilder) {
-        super(annotations);
-        this.parametersMetaBuilder = parametersMetaBuilder;
-    }
 
     <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context) throws BuilderException {
         Constructor<T> constructor = find(classMeta);
@@ -27,7 +24,6 @@ class ConstructorBuilder extends AbstractBuilder {
                 .build();
     }
 
-
     private <T> Constructor<T> find(Meta.Class<T> classMeta) throws BuilderException {
         Class<?> bindClass = classMeta.getBindClass();
         Class<T> buildClass = classMeta.getBuildClass();
@@ -35,7 +31,7 @@ class ConstructorBuilder extends AbstractBuilder {
         if (bindClass != buildClass) {
             return typedConstructorLookup(bindClass, buildClass);
         } else {
-            List<Constructor<?>> constructors = findInject(buildClass.getDeclaredConstructors());
+            List<Constructor<?>> constructors = Annotations.findInject(buildClass.getDeclaredConstructors());
             if (constructors.size() == 0) {
                 return noArgConstructor(buildClass);
             } else if (constructors.size() > 1) {
@@ -47,7 +43,7 @@ class ConstructorBuilder extends AbstractBuilder {
 
     private <T> Constructor<T> typedConstructorLookup(@NonNull Class<?> bindClass, @NonNull Class<T> buildClass) throws BuilderException {
         Constructor<?>[] constructors = bindClass.getDeclaredConstructors();
-        List<Integer> injectIndexes = findInjectIndexes(constructors);
+        List<Integer> injectIndexes = Annotations.findInjectIndexes(constructors);
         if (injectIndexes.size() == 0) {
             return noArgConstructor(buildClass);
         } else if (injectIndexes.size() > 1) {

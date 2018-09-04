@@ -222,7 +222,7 @@ public class InjectorTest {
                 one = injector.get(theClass);
                 two = injector.get(theClass);
             } catch (InjectException e) {
-                throw new UncheckedInjectException(e);
+                throw e.unchecked();
             }
         }
     }

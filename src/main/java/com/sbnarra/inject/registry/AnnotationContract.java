@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.lang.annotation.Annotation;
+
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper = true)

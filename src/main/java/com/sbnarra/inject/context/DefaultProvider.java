@@ -1,7 +1,6 @@
 package com.sbnarra.inject.context;
 
 import com.sbnarra.inject.InjectException;
-import com.sbnarra.inject.UncheckedInjectException;
 import com.sbnarra.inject.meta.Meta;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +16,7 @@ public class DefaultProvider<T> implements Provider<T> {
         try {
             return context.get(meta);
         } catch (ContextException e) {
-            throw new UncheckedInjectException(new InjectException("failed to provide: " + meta, e));
+            throw new InjectException("failed to provide: " + meta, e).unchecked();
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.sbnarra.inject.meta.builder;
 
-import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.registry.TypeBinding;
 
@@ -12,11 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class InjectBuilder extends AbstractBuilder {
-
-    public InjectBuilder(Annotations annotations) {
-        super(annotations);
-    }
+public class InjectBuilder {
 
     public Meta.Inject build(AnnotatedElement annotatedElement) throws BuilderException {
         return build(annotatedElement, null);

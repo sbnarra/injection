@@ -78,12 +78,6 @@ public class Graph {
     }
 
     private boolean qualiferMatches(Annotation qualifier, Annotation injectQualifier) {
-        Debug.log(qualifier + " - " + injectQualifier);
-        if (qualifier != null) {
-            boolean r=  injectQualifier != null  && qualifier.equals(injectQualifier);
-        Debug.log(r);
-        return r;
-        }
-        return true;
+        return qualifier != null ? injectQualifier != null  && qualifier.equals(injectQualifier) : true;
     }
 }

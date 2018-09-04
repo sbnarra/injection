@@ -1,6 +1,5 @@
 package com.sbnarra.inject.context;
 
-import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.graph.GraphException;
@@ -38,12 +37,10 @@ class DefaultContext implements Context {
     }
 
     @Override
-    public <T> Node lookup(Type<T> theType, Annotation qualifier) throws ContextException {
+    public <T> Node<?> lookup(Type<T> theType, Annotation qualifier) throws ContextException {
 
-        Debug.log("type: " + theType + " - qual: " + qualifier);
-        Node node = graph.find(theType,  qualifier);
+        Node<?> node = graph.find(theType,  qualifier);
         if (node != null) {
-            Debug.log("node: " + node);
             return node;
         }
 
@@ -56,7 +53,6 @@ class DefaultContext implements Context {
             if (typeBinding == null) {
                 throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
             }
-            Debug.log(typeBinding);
             return graph.addNode(typeBinding, this);
         } catch (GraphException e) {
             throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
@@ -64,7 +60,7 @@ class DefaultContext implements Context {
     }
 
     private <T> TypeBinding<T> selfBinding(Type<T> theType) {
-        return new TypeBinding<>(theType, getRegistry().getTypeBindings())
+        return new TypeBinding<T>(theType, getRegistry().getTypeBindings())
                 .with(theType)
                 .getBinding();
     }

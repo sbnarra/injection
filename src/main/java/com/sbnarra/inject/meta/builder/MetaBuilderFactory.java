@@ -1,43 +1,42 @@
 package com.sbnarra.inject.meta.builder;
 
-import com.sbnarra.inject.core.Annotations;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.attribute.AnnotationRetention;
 
 public class MetaBuilderFactory {
-    public MetaBuilder newInstance(Annotations annotations) {
-        return createMetaBuilder(new ByteBuddy().with(AnnotationRetention.ENABLED), annotations);
+    public MetaBuilder newInstance() {
+        return createMetaBuilder(new ByteBuddy().with(AnnotationRetention.ENABLED));
     }
 
-    private MetaBuilder createMetaBuilder(ByteBuddy byteBuddy, Annotations annotations) {
-        InjectBuilder injectBuilder = createInjectBuilder(annotations);
-        ParametersMetaBuilder parametersMetaBuilder = new ParametersMetaBuilder(annotations, injectBuilder);
+    private MetaBuilder createMetaBuilder(ByteBuddy byteBuddy) {
+        InjectBuilder injectBuilder = createInjectBuilder();
+        ParametersMetaBuilder parametersMetaBuilder = new ParametersMetaBuilder(injectBuilder);
         ClassBuilder classBuilder = createClassBuilder(byteBuddy, injectBuilder);
-        ConstructorBuilder constructorBuilder = createConstructorBuilder(annotations, parametersMetaBuilder);
-        MethodBuilder methodBuilder = createMethodBuilder(annotations, parametersMetaBuilder);
-        FieldBuilder fieldBuilder = createFieldBuilder(annotations, injectBuilder);
+        ConstructorBuilder constructorBuilder = createConstructorBuilder(parametersMetaBuilder);
+        MethodBuilder methodBuilder = createMethodBuilder(parametersMetaBuilder);
+        FieldBuilder fieldBuilder = createFieldBuilder(injectBuilder);
         AspectBuilder aspectBuilder = createAspectBuilder();
-        return new MetaBuilder(annotations, classBuilder, constructorBuilder, methodBuilder, fieldBuilder, aspectBuilder);
+        return new MetaBuilder(classBuilder, constructorBuilder, methodBuilder, fieldBuilder, aspectBuilder);
     }
 
-    private InjectBuilder createInjectBuilder(Annotations annotations) {
-        return new InjectBuilder(annotations);
+    private InjectBuilder createInjectBuilder() {
+        return new InjectBuilder();
     }
 
     private ClassBuilder createClassBuilder(ByteBuddy byteBuddy, InjectBuilder injectBuilder) {
         return new ClassBuilder(byteBuddy, injectBuilder);
     }
 
-    private ConstructorBuilder createConstructorBuilder(Annotations annotations, ParametersMetaBuilder parametersMetaBuilder) {
-        return new ConstructorBuilder(annotations, parametersMetaBuilder);
+    private ConstructorBuilder createConstructorBuilder(ParametersMetaBuilder parametersMetaBuilder) {
+        return new ConstructorBuilder(parametersMetaBuilder);
     }
 
-    private MethodBuilder createMethodBuilder(Annotations annotations, ParametersMetaBuilder parametersMetaBuilder) {
-        return new MethodBuilder(annotations, parametersMetaBuilder);
+    private MethodBuilder createMethodBuilder(ParametersMetaBuilder parametersMetaBuilder) {
+        return new MethodBuilder(parametersMetaBuilder);
     }
 
-    private FieldBuilder createFieldBuilder(Annotations annotations, InjectBuilder injectBuilder) {
-        return new FieldBuilder(annotations, injectBuilder);
+    private FieldBuilder createFieldBuilder(InjectBuilder injectBuilder) {
+        return new FieldBuilder(injectBuilder);
     }
 
     private AspectBuilder createAspectBuilder() {

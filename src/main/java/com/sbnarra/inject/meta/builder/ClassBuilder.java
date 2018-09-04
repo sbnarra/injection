@@ -5,7 +5,9 @@ import com.sbnarra.inject.aspect.AspectInvoker;
 import com.sbnarra.inject.aspect.Invoker;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
+import com.sbnarra.inject.registry.Contract;
 import com.sbnarra.inject.registry.TypeBinding;
+import com.sbnarra.inject.registry.TypeContract;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;
@@ -31,7 +33,10 @@ class ClassBuilder {
     }
 
     <T> Meta.Class<T> build(TypeBinding<T> typeBinding, List<Meta.Aspect> aspectMetas) throws BuilderException {
-        Meta.Class.ClassBuilder builder = Meta.Class.builder().bindClass(typeBinding.getType().getTheClass());
+        Meta.Class.ClassBuilder<T> builder = Meta.Class.<T>builder().bindClass(typeBinding.getType().getTheClass());
+
+        TypeContract<T> contract = typeBinding.getContract();
+        Type<? extends T> type = contract.getType();
 
         Class<?> contractClass;
         if (typeBinding.getContract().getType().isParameterized()) {
@@ -49,7 +54,7 @@ class ClassBuilder {
                 .build();
     }
 
-    private Class<?> parameterizedBuild(Type<?> type, Meta.Class.ClassBuilder metaBuilder, List<Meta.Aspect> aspectMetas) {
+    private Class<?> parameterizedBuild(Type<?> type, Meta.Class.ClassBuilder<?> metaBuilder, List<Meta.Aspect> aspectMetas) {
         DynamicType.Builder<?> builder = applyAspects(byteBuddy.subclass(type.getParameterized().getType()), aspectMetas);
         Class builderClass = builder.make().load(type.getTheClass().getClassLoader()).getLoaded();
 
@@ -59,20 +64,20 @@ class ClassBuilder {
         return contractClass;
     }
 
-    private Class<?> buildWithAspects(Type<?> type, Meta.Class.ClassBuilder metaBuilder, List<Meta.Aspect> aspectMetas) {
-        DynamicType.Builder<?> builder = byteBuddy.subclass(type.getTheClass());
+    private <T> Class<?> buildWithAspects(Type<? extends T> type, Meta.Class.ClassBuilder<T> metaBuilder, List<Meta.Aspect> aspectMetas) {
+        DynamicType.Builder<? extends T> builder = byteBuddy.subclass(type.getTheClass());
 
-        Class builderClass = applyAspects(builder, aspectMetas).make()
+        Class<? extends T> builderClass = applyAspects(builder, aspectMetas).make()
                 .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                 .getLoaded();
 
-        metaBuilder.buildClass(builderClass);
+        metaBuilder.buildClass((Class<T>) builderClass);
         Class<?> contractClass = builderClass.getSuperclass();
         metaBuilder.contractClass(contractClass);
         return contractClass;
     }
 
-    private DynamicType.Builder<?> applyAspects(DynamicType.Builder<?> builder, List<Meta.Aspect> aspectMetas) {
+    private <T> DynamicType.Builder<T> applyAspects(DynamicType.Builder<T> builder, List<Meta.Aspect> aspectMetas) {
         for (Meta.Aspect aspectMeta : aspectMetas) {
             builder = builder.method(isAnnotatedWith(aspectMeta.getAnnotationClass()))
                     .intercept(aspectDelegation(aspectMeta.getAspect()));

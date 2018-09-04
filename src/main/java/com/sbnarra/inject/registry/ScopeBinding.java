@@ -23,7 +23,7 @@ public class ScopeBinding extends Binding<ScopeContract, ScopeBinding> {
     }
 
     @Override
-    protected void register(Collection registryBindings) {
+    protected void register(Collection<ScopeBinding> registryBindings) {
         registryBindings.add(this);
     }
 }

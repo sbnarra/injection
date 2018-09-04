@@ -9,9 +9,11 @@ import java.util.Collection;
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
-public abstract class Binding<C extends Contract, B extends Binding<?, ?>> {
+public abstract class Binding<C extends Contract<GB>, GB extends Binding<?, ?>> {
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private final Collection<GB> registryBindings;
     private C contract;
-    @ToString.Exclude private final Collection<B> registryBindings;
 
     protected C setContract(C contract) {
         register();
@@ -22,7 +24,7 @@ public abstract class Binding<C extends Contract, B extends Binding<?, ?>> {
         register(registryBindings);
     }
 
-    protected abstract void register(Collection<B> registryBindings);
+    protected abstract void register(Collection<GB> registryBindings);
 
     public C getContract() {
         return this.contract;

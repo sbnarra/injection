@@ -1,6 +1,5 @@
 package com.sbnarra.inject.context;
 
-import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.graph.Graph;
 import com.sbnarra.inject.graph.GraphException;
 import com.sbnarra.inject.meta.builder.MetaBuilderFactory;
@@ -9,10 +8,10 @@ import com.sbnarra.inject.registry.TypeBinding;
 
 public class ContextFactory {
 
-    public Context create(Registry registry, Annotations annotations) throws ContextException {
-        Graph graph = new Graph(new MetaBuilderFactory().newInstance(annotations));
+    public Context create(Registry registry) throws ContextException {
+        Graph graph = new Graph(new MetaBuilderFactory().newInstance());
 
-        ScopedContext scopedContext = new ScopedContext(registry, annotations);
+        ScopedContext scopedContext = new ScopedContext(registry);
         Context context = new DefaultContext(registry, graph, scopedContext);
 
         for (TypeBinding<?> typeBinding : registry.getTypeBindings()) {

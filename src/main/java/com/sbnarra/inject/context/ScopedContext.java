@@ -1,7 +1,6 @@
 package com.sbnarra.inject.context;
 
 import com.sbnarra.inject.ThreadLocal;
-import com.sbnarra.inject.core.Annotations;
 import com.sbnarra.inject.meta.Meta;
 import com.sbnarra.inject.registry.Registry;
 import com.sbnarra.inject.registry.ScopeBinding;
@@ -24,7 +23,7 @@ public class ScopedContext {
 
     private final Map<Class<?>, ScopeHandler> scopes = new HashMap<>();
 
-    public ScopedContext(Registry registry, Annotations annotations) {
+    public ScopedContext(Registry registry) {
         scopes.put(ThreadLocal.class, new ThreadLocalScopeHandler());
         scopes.put(Singleton.class, new SingletonScopeHandler());
         for (ScopeBinding binding : registry.getScopeBindings()) {
