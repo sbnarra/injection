@@ -1,6 +1,5 @@
 package com.sbnarra.inject.graph;
 
-import com.sbnarra.inject.Debug;
 import com.sbnarra.inject.context.Context;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
@@ -18,7 +17,7 @@ import java.util.Set;
 @ToString
 public class Graph {
 
-    private final Set<Node> rootNodes = new HashSet<>();
+    private final Set<Node<?>> rootNodes = new HashSet<>();
     private final MetaBuilder metaBuilder;
 
     public Node<?> addNode(TypeBinding<?> typeBinding, Context context) throws GraphException {
@@ -27,14 +26,14 @@ public class Graph {
             return node;
         }
 
-        Meta meta;
+        Meta<?> meta;
         try {
             meta = metaBuilder.build(typeBinding, context);
         } catch (BuilderException e) {
             throw new GraphException("error building node meta: " + typeBinding, e);
         }
 
-        rootNodes.add(node = new Node(meta));
+        rootNodes.add(node = new Node<>(meta));
         return node;
     }
 
@@ -42,9 +41,9 @@ public class Graph {
         return find(type.getTheClass(), annotation, rootNodes);
     }
 
-    private Node<?> find(java.lang.reflect.Type tClass, Annotation qualifier, Set<Node> nodes) {
+    private Node<?> find(java.lang.reflect.Type tClass, Annotation qualifier, Set<Node<?>> nodes) {
         for (Node<?> node : nodes) {
-            Meta meta = node.getMeta();
+            Meta<?> meta = node.getMeta();
             Meta.Class<?> clazz = meta.getClazz();
             Meta.Inject inject = clazz.getInject();
             Annotation injectQualifier = inject.getQualifier();
@@ -54,22 +53,19 @@ public class Graph {
             }
 
             if (meta.getInstance() != null) {
-                if (!qualiferMatches(qualifier, injectQualifier)) {
-                    continue;
-                } else if (tClass.equals(meta.getInstance().getClass())) {
+                if (tClass.equals(meta.getInstance().getClass())) {
                     return node;
                 }
                 continue;
             }
 
-            Meta.Class classMeta = meta.getClazz();
-
+            Meta.Class<?> classMeta = meta.getClazz();
             Class<?> bindClass = classMeta.getBindClass();
             if (tClass.equals(bindClass)) {
                 return node;
             }
 
-            Node foundNode = find(tClass, qualifier, node.getDescendants());
+            Node<?> foundNode = find(tClass, qualifier, node.getDescendants());
             if (foundNode != null) {
                 return foundNode;
             }
@@ -78,6 +74,6 @@ public class Graph {
     }
 
     private boolean qualiferMatches(Annotation qualifier, Annotation injectQualifier) {
-        return qualifier != null ? injectQualifier != null  && qualifier.equals(injectQualifier) : true;
+        return qualifier != null ? qualifier.equals(injectQualifier) : injectQualifier == null;
     }
 }

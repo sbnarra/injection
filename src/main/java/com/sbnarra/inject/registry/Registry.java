@@ -7,7 +7,6 @@ import lombok.ToString;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,21 +18,7 @@ public class Registry {
     private final Collection<TypeBinding<?>> typeBindings = new ArrayList<>();
     private final List<ScopeBinding> scopeBindings = new ArrayList<>();
 
-    private Registry() {
-    }
-
-    public static Registry registrate(Registration... registrations) throws RegistryException {
-        return registrate(Arrays.asList(registrations));
-    }
-
-    public static Registry registrate(List<Registration> registrations) throws RegistryException {
-        Registry registry = new Registry();
-        for (Registration registration : registrations) {
-            registration.setRegistry(registry);
-            registration.register();
-        }
-        new RegistryValidator().validate(registry);
-        return registry;
+    Registry() {
     }
 
     public <T> TypeBinding<T> bind(Class<T> tClass) {
@@ -57,12 +42,10 @@ public class Registry {
     }
 
     public TypeBinding<?> find(Class<?> aClass, Annotation qualifier) {
-        Debug.log("find: " + aClass + " - " + qualifier);
         for (TypeBinding<?> typeBinding : typeBindings) {
             Debug.log(typeBinding);
             if (qualifier != null) {
                 if (typeBinding.getQualifier() == null || !qualifier.annotationType().equals(typeBinding.getQualifier().annotationType())) {
-                    Debug.log("continue: " + typeBinding);
                     continue;
                 }
             }
@@ -72,7 +55,6 @@ public class Registry {
                 return typeBinding;
             }
         }
-        Debug.log("find:null");
         return null;
     }
 }

@@ -7,6 +7,7 @@ import com.sbnarra.inject.core.DefaultInjector;
 import com.sbnarra.inject.registry.Registration;
 import com.sbnarra.inject.registry.Registry;
 import com.sbnarra.inject.registry.RegistryException;
+import com.sbnarra.inject.registry.RegistryFactory;
 
 import java.util.Arrays;
 
@@ -19,7 +20,7 @@ public class InjectorFactory {
 
     private static Registry createRegistry(Registration... registrations) throws InjectException {
         try {
-            return Registry.registrate(registrations);
+            return RegistryFactory.registrate(registrations);
         } catch (RegistryException e) {
             throw new InjectException("error creating registry: " + Arrays.toString(registrations), e);
         }

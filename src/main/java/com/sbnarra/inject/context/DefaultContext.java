@@ -60,7 +60,7 @@ class DefaultContext implements Context {
     }
 
     private <T> TypeBinding<T> selfBinding(Type<T> theType) {
-        return new TypeBinding<T>(theType, getRegistry().getTypeBindings())
+        return new TypeBinding<>(theType, getRegistry().getTypeBindings())
                 .with(theType)
                 .getBinding();
     }
@@ -72,7 +72,7 @@ class DefaultContext implements Context {
         }
 
         Meta.Constructor<T> constructorMeta = meta.getConstructor();
-        java.lang.reflect.Constructor<T> constructor = constructorMeta.getConstructor();
+        java.lang.reflect.Constructor<? extends T> constructor = constructorMeta.getConstructor();
 
         Object[] args = getParameters(constructorMeta.getParameters());
 

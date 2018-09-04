@@ -8,7 +8,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @Getter
-public class ScopeContract extends Contract<ScopeBinding> {
+public class ScopeContract extends Contract<ScopeBinding, ScopeContract, ScopeBinding> {
     private final ScopeHandler scopeHandler;
 
     public ScopeContract(ScopeBinding scopeBinding, ScopeHandler scopeHandler) {

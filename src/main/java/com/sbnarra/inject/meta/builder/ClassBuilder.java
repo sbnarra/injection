@@ -5,7 +5,6 @@ import com.sbnarra.inject.aspect.AspectInvoker;
 import com.sbnarra.inject.aspect.Invoker;
 import com.sbnarra.inject.core.Type;
 import com.sbnarra.inject.meta.Meta;
-import com.sbnarra.inject.registry.Contract;
 import com.sbnarra.inject.registry.TypeBinding;
 import com.sbnarra.inject.registry.TypeContract;
 import lombok.RequiredArgsConstructor;

@@ -14,7 +14,7 @@ class ConstructorBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
     <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context) throws BuilderException {
-        Constructor<T> constructor = find(classMeta);
+        Constructor<? extends T> constructor = find(classMeta);
         List<Meta.Parameter> fieldMeta = parametersMetaBuilder.getParameters(constructor, context);
 
         constructor.setAccessible(true);
@@ -24,9 +24,9 @@ class ConstructorBuilder {
                 .build();
     }
 
-    private <T> Constructor<T> find(Meta.Class<T> classMeta) throws BuilderException {
+    private <T> Constructor<? extends T> find(Meta.Class<T> classMeta) throws BuilderException {
         Class<?> bindClass = classMeta.getBindClass();
-        Class<T> buildClass = classMeta.getBuildClass();
+        Class<? extends T> buildClass = classMeta.getBuildClass();
 
         if (bindClass != buildClass) {
             return typedConstructorLookup(bindClass, buildClass);
@@ -41,7 +41,7 @@ class ConstructorBuilder {
         }
     }
 
-    private <T> Constructor<T> typedConstructorLookup(@NonNull Class<?> bindClass, @NonNull Class<T> buildClass) throws BuilderException {
+    private <T> Constructor<? extends T> typedConstructorLookup(@NonNull Class<?> bindClass, @NonNull Class<? extends T> buildClass) throws BuilderException {
         Constructor<?>[] constructors = bindClass.getDeclaredConstructors();
         List<Integer> injectIndexes = Annotations.findInjectIndexes(constructors);
         if (injectIndexes.size() == 0) {
@@ -54,7 +54,7 @@ class ConstructorBuilder {
         return getTypeSafeConstructor(buildClass, constructor);
     }
 
-    private <T> Constructor<T> getTypeSafeConstructor(Class<T> theClass, Constructor<?> constructor) throws BuilderException {
+    private <T> Constructor<? extends T> getTypeSafeConstructor(Class<? extends T> theClass, Constructor<?> constructor) throws BuilderException {
         try {
             return theClass.getDeclaredConstructor(constructor.getParameterTypes());
         } catch (NoSuchMethodException e) {
@@ -62,7 +62,7 @@ class ConstructorBuilder {
         }
     }
 
-    private <T> Constructor<T> noArgConstructor(Class<T> theClass) throws BuilderException {
+    private <T> Constructor<? extends T> noArgConstructor(Class<? extends T> theClass) throws BuilderException {
         try {
             return theClass.getConstructor();
         } catch (NoSuchMethodException e) {

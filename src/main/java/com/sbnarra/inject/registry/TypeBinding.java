@@ -12,7 +12,7 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @ToString(callSuper = true)
-public class TypeBinding<T> extends Binding<TypeContract<T>, TypeBinding<?>> {
+public class TypeBinding<T> extends Binding<TypeContract<T>, TypeBinding<?>, TypeBinding<T>> {
     private final Type<T> type;
     private T instance;
     private Annotation qualifier;

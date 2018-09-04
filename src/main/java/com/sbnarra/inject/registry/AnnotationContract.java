@@ -5,12 +5,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.lang.annotation.Annotation;
-
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class AnnotationContract extends Contract<AnnotationBinding> {
+public class AnnotationContract extends Contract<AnnotationBinding, AnnotationContract, AnnotationBinding> {
     private final Aspect aspect;
 
     public AnnotationContract(AnnotationBinding binding, Aspect aspect) {

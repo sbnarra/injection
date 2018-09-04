@@ -9,6 +9,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <byte-buddy.version>1.8.17</byte-buddy.version>
         <jacoco.plugin.version>0.8.2</jacoco.plugin.version>

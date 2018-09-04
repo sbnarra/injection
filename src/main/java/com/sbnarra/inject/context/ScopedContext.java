@@ -23,7 +23,7 @@ public class ScopedContext {
 
     private final Map<Class<?>, ScopeHandler> scopes = new HashMap<>();
 
-    public ScopedContext(Registry registry) {
+    ScopedContext(Registry registry) {
         scopes.put(ThreadLocal.class, new ThreadLocalScopeHandler());
         scopes.put(Singleton.class, new SingletonScopeHandler());
         for (ScopeBinding binding : registry.getScopeBindings()) {

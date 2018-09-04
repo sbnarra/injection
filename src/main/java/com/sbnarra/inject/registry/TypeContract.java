@@ -12,7 +12,7 @@ import java.lang.annotation.Annotation;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @Getter
-public class TypeContract<T> extends Contract<TypeBinding<?>> {
+public class TypeContract<T> extends Contract<TypeBinding<?>, TypeContract<T>, TypeBinding<T>> {
     private Annotation scoped;
 
     private final Type<? extends T> type;

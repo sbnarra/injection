@@ -38,7 +38,7 @@ public class Meta<T> {
     @Value
     @Builder
     public static class Constructor<T> {
-        private final java.lang.reflect.Constructor<T> constructor;
+        private final java.lang.reflect.Constructor<? extends T> constructor;
         private final List<Parameter> parameters;
     }
 

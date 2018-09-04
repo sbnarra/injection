@@ -9,13 +9,16 @@ import java.util.Collection;
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
-public abstract class Binding<C extends Contract<GB>, GB extends Binding<?, ?>> {
+public abstract class Binding<
+        CONTRACT extends Contract<RAW_BINDING, CONTRACT, ACTUAL_BINDING>,
+        RAW_BINDING extends Binding<?, ?, ?>,
+        ACTUAL_BINDING extends Binding<CONTRACT, RAW_BINDING, ACTUAL_BINDING>> {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private final Collection<GB> registryBindings;
-    private C contract;
+    private final Collection<RAW_BINDING> registryBindings;
+    private CONTRACT contract;
 
-    protected C setContract(C contract) {
+    protected CONTRACT setContract(CONTRACT contract) {
         register();
         return this.contract = contract;
     }
@@ -24,9 +27,9 @@ public abstract class Binding<C extends Contract<GB>, GB extends Binding<?, ?>> 
         register(registryBindings);
     }
 
-    protected abstract void register(Collection<GB> registryBindings);
+    protected abstract void register(Collection<RAW_BINDING> registryBindings);
 
-    public C getContract() {
+    public CONTRACT getContract() {
         return this.contract;
     }
 }

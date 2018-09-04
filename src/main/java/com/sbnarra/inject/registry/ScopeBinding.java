@@ -10,7 +10,7 @@ import java.util.Collection;
 @ToString(callSuper = true)
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class ScopeBinding extends Binding<ScopeContract, ScopeBinding> {
+public class ScopeBinding extends Binding<ScopeContract, ScopeBinding, ScopeBinding> {
     private final Class<?> scoped;
 
     public ScopeBinding(Class<?> scoped, Collection<ScopeBinding> registryBindings) {
