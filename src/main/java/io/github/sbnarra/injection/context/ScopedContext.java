@@ -1,5 +1,6 @@
 package io.github.sbnarra.injection.context;
 
+import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.ScopeBinding;
@@ -28,9 +29,9 @@ public class ScopedContext {
         }
     }
 
-    public <T> T get(Meta<T> meta, DefaultContext context) throws ContextException {
+    public <T> T get(Meta<T> meta, Injector injector) throws ContextException {
         try {
-            return getScopeHandler(meta).get(meta, context);
+            return getScopeHandler(meta).get(meta, injector);
         } catch (ScopeHandlerException e) {
             throw new ContextException("error getting instance using scope handler", e);
         }

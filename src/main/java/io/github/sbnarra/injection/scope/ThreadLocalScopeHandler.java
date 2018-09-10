@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.scope;
 
-import io.github.sbnarra.injection.context.Context;
+import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.meta.Meta;
 
@@ -17,7 +17,7 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
     }
 
     @Override
-    public <T> T get(Meta<T> meta, Context context) throws ScopeHandlerException {
+    public <T> T get(Meta<T> meta, Injector injector) throws ScopeHandlerException {
         Map<Meta<?>, Object> map = getMap();
 
         Object obj = map.get(meta);
@@ -25,16 +25,16 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
             synchronized (map) {
                 obj = map.get(meta);
                 if (obj == null) {
-                    return storeConstructed(map, meta, context);
+                    return storeConstructed(map, meta, injector);
                 }
             }
         }
         return meta.getClazz().getBuildClass().cast(obj);
     }
 
-    private <T> T storeConstructed(Map<Meta<?>, Object> map, Meta<T> meta, Context context) throws ScopeHandlerException {
+    private <T> T storeConstructed(Map<Meta<?>, Object> map, Meta<T> meta, Injector injector) throws ScopeHandlerException {
         try {
-            T constructed = context.construct(meta);
+            T constructed = injector.context().construct(meta, injector);
             map.put(meta, constructed);
             return constructed;
         } catch (ContextException e) {

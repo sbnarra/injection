@@ -3,16 +3,17 @@ package io.github.sbnarra.injection.meta.builder;
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.core.Annotations;
-import io.github.sbnarra.injection.core.Debug;
+import io.github.sbnarra.injection.core.AnnotationsException;
 import io.github.sbnarra.injection.core.Parameterized;
 import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.graph.Node;
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.RequiredArgsConstructor;
 
-import javax.inject.Named;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,38 +24,19 @@ class ParametersMetaBuilder {
 
     List<Meta.Parameter> getParameters(Executable executable, Context context) throws BuilderException {
         List<Meta.Parameter> metas = new ArrayList<>();
-        Annotation[][] annotations = executable.getParameterAnnotations();
         java.lang.reflect.Parameter[] parameters = executable.getParameters();
 
         for (int i = 0; i < executable.getParameterCount(); i++) {
-            java.lang.reflect.Parameter type = parameters[i];
-            Named named = Annotations.getName(annotations[i]);
-            Debug.log(executable);
-            Debug.log(type);
-            Debug.log(named);
+            Parameter type = parameters[i];
 
+            Annotation qualifier, scope;
             try {
-                Type<?> paramType = new Type<Object>(type.getParameterizedType()) {};
-                Debug.log(paramType);
-                Meta.Parameter.ParameterBuilder builder = Meta.Parameter.builder().provider(paramType.isProvider());
-
-                if (paramType.isProvider()) {
-                    Parameterized<?> parameterized = paramType.getParameterized();
-                    List<Type<?>> generics = parameterized.getGenerics();
-                    Type<?> providerType = generics.get(0);
-                    // TODO - causing circlar dep
-                    Node<?> node = context.lookup(providerType, named);
-
-                   builder.meta(node.getMeta());
-                } else {
-                    Node<?> node = context.lookup(paramType, named);
-                    builder.meta(node.getMeta());
-                }
-                builder.inject(injectBuilder.build(type));
-                metas.add(builder.build());
-            } catch (ContextException e) {
-                throw new BuilderException("error looking up type: " + type + ": named: " + named != null ? named.value() : null, e);
+                qualifier = Annotations.findQualifier(type);
+                scope = Annotations.findScope(type);
+            } catch (AnnotationsException e) {
+                throw new BuilderException("error finding qualifier", e);
             }
+            metas.add(getParameter(type, type.getParameterizedType(), qualifier, scope, context));
         }
 
         if (executable.getParameterCount() != metas.size()) {
@@ -62,5 +44,35 @@ class ParametersMetaBuilder {
                     + Arrays.toString(executable.getParameters()) + ",created=" + metas);
         }
         return metas;
+    }
+
+    public <T> Meta.Parameter getParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier, Annotation scope, Context context) throws BuilderException {
+        Type<?> paramType = new Type<Object>(type) {};
+
+        if (paramType.isProvider()) {
+            if (!paramType.isParameterized()) {
+                throw new BuilderException("non-parameterized provider: " + type);
+            }
+
+            Parameterized<?> parameterized = paramType.getParameterized();
+            List<Type<?>> generics = parameterized.getGenerics();
+            Type<?> providerType = generics.get(0);
+
+            return Meta.ProviderParameter.<T>builder()
+                   .type(providerType)
+                   .inject(injectBuilder.build(annotatedElement))
+                   .build();
+        } else {
+            Meta.InstanceParameter.Builder builder = Meta.InstanceParameter.builder();
+            Node<?> node;
+            try {
+                node = context.lookup(paramType, qualifier, scope);
+            } catch (ContextException e) {
+                throw new BuilderException("error looking up type: " + type + ": qualifier: " + qualifier, e);
+            }
+            builder.meta(node.getMeta());
+            builder.inject(injectBuilder.build(annotatedElement));
+            return builder.build();
+        }
     }
 }

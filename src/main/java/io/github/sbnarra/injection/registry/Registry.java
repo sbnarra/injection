@@ -1,8 +1,11 @@
 package io.github.sbnarra.injection.registry;
 
+import io.github.sbnarra.injection.core.Debug;
 import io.github.sbnarra.injection.core.Type;
 import lombok.Getter;
 import lombok.ToString;
+import org.atinject.tck.auto.Seat;
+import org.atinject.tck.auto.Tire;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class Registry {
     public TypeBinding<?> find(Class<?> aClass, Annotation qualifier) {
         for (TypeBinding<?> typeBinding : typeBindings) {
             if (qualifier != null) {
-                if (typeBinding.getQualifier() == null || !qualifier.annotationType().equals(typeBinding.getQualifier().annotationType())) {
+                if (typeBinding.getQualifier() == null || !typeBinding.getQualifier().equals(qualifier)) {
                     continue;
                 }
             }

@@ -4,6 +4,7 @@ import io.github.sbnarra.injection.InjectException;
 import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
+import io.github.sbnarra.injection.context.DefaultProvider;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
@@ -14,9 +15,13 @@ public class DefaultInjector implements Injector {
     private final Context context;
 
     @Override
-    public <T> T get(Type<T> type, Annotation qualifier) throws InjectException {
+    public <T> T get(Type<T> type, Annotation qualifier, Annotation scope) throws InjectException {
+        if (type.isProvider()) {
+            return (T) new DefaultProvider<>(type.getParameterized().getGenerics().get(0), this, qualifier, scope);
+        }
+
         try {
-            return context.get(type, qualifier);
+            return context.get(type, qualifier, scope, this);
         } catch (ContextException e) {
             throw new InjectException("failed to get: " + type, e);
         }

@@ -6,6 +6,10 @@ public class InjectException extends Exception {
         super(msg, e);
     }
 
+    public InjectException(String msg) {
+        super(msg);
+    }
+
     public Unchecked unchecked() {
         return new Unchecked(this);
     }

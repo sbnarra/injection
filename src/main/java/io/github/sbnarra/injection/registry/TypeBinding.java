@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.registry;
 
-import io.github.sbnarra.injection.core.NamedAnnotation;
+import io.github.sbnarra.injection.core.Named;
 import io.github.sbnarra.injection.core.SimpleAnnotation;
 import io.github.sbnarra.injection.core.Type;
 import lombok.EqualsAndHashCode;
@@ -37,14 +37,12 @@ public class TypeBinding<T> extends Binding<TypeContract<T>, TypeBinding<?>, Typ
     }
 
     public TypeBinding<T> named(String named) {
-        return qualified(new NamedAnnotation(named));
+        return qualified(new Named(named));
     }
 
-    public TypeBinding<T> qualified(Class<?> qualifier) throws RegistryException {
-        if (!qualifier.isAnnotation()) {
-            throw new RegistryException(qualifier + ": is not an annotation");
-        }
-        return qualified(new SimpleAnnotation((Class<? extends Annotation>) qualifier));
+    public TypeBinding<T> qualified(Class<?> qualifier) {
+        SimpleAnnotation simpleAnnotation = new SimpleAnnotation((Class<? extends Annotation>) qualifier);
+        return qualified(simpleAnnotation);
     }
 
     public TypeBinding<T> qualified(Annotation qualifier) {

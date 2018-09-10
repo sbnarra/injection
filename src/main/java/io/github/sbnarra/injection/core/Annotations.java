@@ -1,15 +1,14 @@
 package io.github.sbnarra.injection.core;
 
 import lombok.Getter;
-import lombok.Value;
 
 import javax.inject.Inject;
-import javax.inject.Named;
+import javax.inject.Qualifier;
+import javax.inject.Scope;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 @Getter
 public class Annotations {
@@ -17,53 +16,51 @@ public class Annotations {
     @SuppressWarnings("unchecked")
     private static final Class<Annotation> INJECT_CLASS = (Class<Annotation>) RAW_INJECT_CLASS;
 
-    public static Named getName(Annotation[] annotations) {
-        for (Annotation annotation : annotations) {
-            if (Named.class.isInstance(annotation)) {
-                return Named.class.cast(annotation);
-            }
-        }
-        return null;
-    }
+    private static final Class<?> RAW_QUALIFIER_CLASS = Qualifier.class;
+    @SuppressWarnings("unchecked")
+    private static final Class<Annotation> QUALIFIER_CLASS = (Class<Annotation>) RAW_QUALIFIER_CLASS;
 
     public static <T extends AnnotatedElement> List<T> findInject(T... annotatedElements) {
-        return findList(annotatedElements, (f, l) -> l.add(f.getExecutable()), INJECT_CLASS);
+        List<T> injectAnnotatedElements = new ArrayList<>();
+        for (T annotatedElement : annotatedElements) {
+            if (annotatedElement.getDeclaredAnnotation(Inject.class) != null) {
+                injectAnnotatedElements.add(annotatedElement);
+            }
+        }
+        return injectAnnotatedElements;
     }
 
-    public static <T extends AnnotatedElement> List<Integer> findInjectIndexes(T... executables) {
-        return findList(executables, (f, l) -> l.add(f.getIndex()), INJECT_CLASS);
-    }
-
-    private static <R, T extends AnnotatedElement> List<R> findList(
-            T[] annotatedElements, BiConsumer<AnnotatedElementResult<T>, List<R>> mapper, Class<Annotation>... annotationClasses) {
-        List<R> found = new ArrayList<>();
+    public static <T extends AnnotatedElement> List<Integer> findInjectIndexes(T... annotatedElements) {
+        List<Integer> injectAnnotatedElements = new ArrayList<>();
         for (int i = 0; i < annotatedElements.length; i++) {
-            for (Class<Annotation> annotationClass : annotationClasses) {
-                AnnotatedElementResult<T> foundAnnotations = findAnnotation(null, i, annotatedElements[i], annotationClass);
-                if (foundAnnotations != null) {
-                    mapper.accept(foundAnnotations, found);
-                }
+            if (annotatedElements[i].getDeclaredAnnotation(Inject.class) != null) {
+                injectAnnotatedElements.add(i);
             }
         }
-        return found;
+        return injectAnnotatedElements;
     }
 
-    private static <T extends AnnotatedElement> AnnotatedElementResult<T> findAnnotation(
-            AnnotatedElementResult<T> result, int index, T annotatedElement, Class<Annotation> annotationClass) {
-        Annotation annotation = annotatedElement.getAnnotation(annotationClass);
-        if (annotation != null) {
-            if (result == null) {
-                result = new AnnotatedElementResult<>(annotatedElement, index);
+    public static <T extends AnnotatedElement> Annotation findScope(T annotatedElement) throws AnnotationsException {
+        return findAnnotation(annotatedElement, Scope.class);
+    }
+
+    public static <T extends AnnotatedElement> Annotation findQualifier(T annotatedElement) throws AnnotationsException {
+        return findAnnotation(annotatedElement, Qualifier.class);
+    }
+
+    private static <T extends AnnotatedElement> Annotation findAnnotation(T annotatedElement, Class<? extends Annotation> annotationClass) throws AnnotationsException {
+        List<Annotation> annotatedElements = new ArrayList<>();
+        for (Annotation annotation : annotatedElement.getDeclaredAnnotations()) {
+            if (annotation.annotationType().getDeclaredAnnotation(annotationClass) != null) {
+                annotatedElements.add(annotation);
             }
-            result.getAnnotations().add(annotation);
         }
-        return result;
-    }
 
-    @Value
-    private static class AnnotatedElementResult<T extends AnnotatedElement> {
-        private final T executable;
-        private final Integer index;
-        private final List<Annotation> annotations = new ArrayList<>();
+        if (annotatedElements.isEmpty()) {
+            return null;
+        } else if (annotatedElements.size() > 1) {
+            throw new AnnotationsException("multiple qualifiers found: " + annotatedElement + ": " + annotatedElements);
+        }
+        return annotatedElements.get(0);
     }
 }

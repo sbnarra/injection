@@ -1,11 +1,8 @@
 package io.github.sbnarra.injection;
 
-import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.core.Type;
-import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
-import io.github.sbnarra.injection.scope.ScopeHandler;
 import io.github.sbnarra.injection.scope.ScopeHandlerException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

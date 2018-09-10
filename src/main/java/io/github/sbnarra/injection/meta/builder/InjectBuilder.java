@@ -32,8 +32,8 @@ public class InjectBuilder {
 
     private Annotation findAnnotation(AnnotatedElement annotatedElement, Class<?> annotationClass) throws BuilderException {
         List<Annotation> annotations = new ArrayList<>();
-        for (Annotation elementAnnotation : annotatedElement.getAnnotations()) {
-            if (Stream.of(elementAnnotation.annotationType().getAnnotations())
+        for (Annotation elementAnnotation : annotatedElement.getDeclaredAnnotations()) {
+            if (Stream.of(elementAnnotation.annotationType().getDeclaredAnnotations())
                     .anyMatch(a -> annotationClass.isAssignableFrom(a.annotationType()))) {
                 annotations.add(elementAnnotation);
             }

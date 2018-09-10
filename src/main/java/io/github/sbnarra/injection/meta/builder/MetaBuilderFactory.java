@@ -14,7 +14,7 @@ public class MetaBuilderFactory {
         ClassBuilder classBuilder = createClassBuilder(byteBuddy, injectBuilder);
         ConstructorBuilder constructorBuilder = createConstructorBuilder(parametersMetaBuilder);
         MethodBuilder methodBuilder = createMethodBuilder(parametersMetaBuilder);
-        FieldBuilder fieldBuilder = createFieldBuilder(injectBuilder);
+        FieldBuilder fieldBuilder = createFieldBuilder(parametersMetaBuilder);
         AspectBuilder aspectBuilder = createAspectBuilder();
         return new MetaBuilder(classBuilder, constructorBuilder, methodBuilder, fieldBuilder, aspectBuilder);
     }
@@ -35,8 +35,8 @@ public class MetaBuilderFactory {
         return new MethodBuilder(parametersMetaBuilder);
     }
 
-    private FieldBuilder createFieldBuilder(InjectBuilder injectBuilder) {
-        return new FieldBuilder(injectBuilder);
+    private FieldBuilder createFieldBuilder(ParametersMetaBuilder parametersMetaBuilder) {
+        return new FieldBuilder(parametersMetaBuilder);
     }
 
     private AspectBuilder createAspectBuilder() {

@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.scope;
 
-import io.github.sbnarra.injection.context.Context;
+import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.meta.Meta;
 
@@ -16,7 +16,7 @@ public class SingletonScopeHandler implements ScopeHandler {
     }
 
     @Override
-    public <T> T get(Meta<T> meta, Context context) throws ScopeHandlerException {
+    public <T> T get(Meta<T> meta, Injector injector) throws ScopeHandlerException {
         Object singleton = singletons.get(meta);
         if (singleton != null) {
             return meta.getClazz().getBuildClass().cast(singleton);
@@ -24,7 +24,8 @@ public class SingletonScopeHandler implements ScopeHandler {
 
         T t;
         try {
-            t = context.construct(meta);
+            // constructor from context not the injector to avoid cyclic injection
+            t = injector.context().construct(meta, injector);
         } catch (ContextException e) {
             throw new ScopeHandlerException("error creating instance: " + meta, e);
         }

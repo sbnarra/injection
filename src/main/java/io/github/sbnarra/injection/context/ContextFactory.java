@@ -6,6 +6,9 @@ import io.github.sbnarra.injection.meta.builder.MetaBuilderFactory;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.TypeBinding;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 public class ContextFactory {
 
     public Context create(Registry registry) throws ContextException {
@@ -14,7 +17,9 @@ public class ContextFactory {
         ScopedContext scopedContext = new ScopedContext(registry);
         Context context = new DefaultContext(registry, graph, scopedContext);
 
-        for (TypeBinding<?> typeBinding : registry.getTypeBindings()) {
+        Iterator<TypeBinding<?>> typeBindingIterator = new ArrayList<>(registry.getTypeBindings()).iterator();
+        while (typeBindingIterator.hasNext()) {
+            TypeBinding<?> typeBinding = typeBindingIterator.next();
             try {
                 graph.addNode(typeBinding, context);
             } catch (GraphException e) {
