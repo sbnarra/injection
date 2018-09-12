@@ -1,7 +1,5 @@
 package io.github.sbnarra.injection;
 
-import io.github.sbnarra.injection.core.Debug;
-import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
 import junit.framework.Test;
@@ -16,9 +14,9 @@ import org.atinject.tck.auto.Tire;
 import org.atinject.tck.auto.V8Engine;
 import org.atinject.tck.auto.accessories.SpareTire;
 
-import javax.inject.Provider;
-
 public class Jsr330TckTest {
+
+
     /*
      * <p>Configure the injector as follows:
      *
@@ -45,7 +43,15 @@ public class Jsr330TckTest {
      * </ul>
      */
     public static Test suite() throws InjectException {
-        Injector injector = InjectorFactory.create(new Registration() {
+        Injector injector = getInjector();
+
+        return Tck.testsFor(injector.get(Car.class),
+                true /* supportsStatic */,
+                true /* supportsPrivate */);
+    }
+
+    private static Injector getInjector() throws InjectException {
+        return InjectorFactory.create(new Registration() {
             @Override
             public void register() throws RegistryException {
                 bind(Car.class).with(Convertible.class);
@@ -56,14 +62,5 @@ public class Jsr330TckTest {
                 bind(Tire.class).named("spare").with(SpareTire.class);
             }
         });
-        Debug.log(injector.get(new Type<Provider<Seat>>() {}, Drivers.class).get());
-        Debug.log(injector.get(Seat.class));
-
-        Debug.log(injector.get(Seat.class, Drivers.class).getCupholder());
-        Debug.log(injector.get(Seat.class, Drivers.class).getCupholder());
-
-        return Tck.testsFor(injector.get(Car.class),
-                false /* supportsStatic */,
-                false /* supportsPrivate */);
     }
 }

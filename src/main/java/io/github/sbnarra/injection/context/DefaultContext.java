@@ -115,7 +115,7 @@ class DefaultContext implements Context {
             Meta.Parameter parameter = field.getParameter();
             if (Meta.InstanceParameter.class.isInstance(parameter)) {
                 Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(parameter);
-                fieldValue = construct(instanceParameter.getMeta(), injector);
+                fieldValue = get(instanceParameter.getMeta(), injector);
             } else {
                 fieldValue = getDefaultProvider(Meta.ProviderParameter.class.cast(parameter), injector);
             }
@@ -145,7 +145,7 @@ class DefaultContext implements Context {
                 args[i] = getDefaultProvider(providerParameter, injector);
             } else {
                 Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(paramMeta);
-                args[i] = construct(instanceParameter.getMeta(), injector);
+                args[i] = get(instanceParameter.getMeta(), injector);
             }
         }
         return args;

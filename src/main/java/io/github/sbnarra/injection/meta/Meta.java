@@ -41,6 +41,7 @@ public class Meta<T> {
         private final java.lang.Class<?> bindClass;
     }
 
+
     @Value
     @Builder
     public static class Constructor<T> {
@@ -50,9 +51,33 @@ public class Meta<T> {
 
     @Value
     @Builder
+    public static class Members<T> {
+        private final List<Field> fields;
+        private final List<Method> methods;
+    }
+
+    @Value
+    @Builder
+    public static class Field {
+        private final java.lang.reflect.Field field;
+        private final Parameter parameter;
+    }
+
+
+    @Value
+    @Builder
     public static class Method {
         private final java.lang.reflect.Method method;
         private final List<Parameter> parameters;
+    }
+
+
+    @ToString
+    @EqualsAndHashCode
+    @Getter
+    @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+    public static abstract class Parameter {
+        private final Inject inject;
     }
 
     @ToString(callSuper = true)
@@ -123,21 +148,6 @@ public class Meta<T> {
                 return new ProviderParameter(type, inject);
             }
         }
-    }
-
-    @ToString
-    @EqualsAndHashCode
-    @Getter
-    @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-    public static abstract class Parameter {
-        private final Inject inject;
-    }
-
-    @Value
-    @Builder
-    public static class Field {
-        private final java.lang.reflect.Field field;
-        private final Parameter parameter;
     }
 
     @Value

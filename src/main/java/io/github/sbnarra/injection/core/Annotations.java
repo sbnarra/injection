@@ -9,21 +9,24 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Getter
 public class Annotations {
     private static final Class<?> RAW_INJECT_CLASS = Inject.class;
-    @SuppressWarnings("unchecked")
     private static final Class<Annotation> INJECT_CLASS = (Class<Annotation>) RAW_INJECT_CLASS;
 
     private static final Class<?> RAW_QUALIFIER_CLASS = Qualifier.class;
-    @SuppressWarnings("unchecked")
     private static final Class<Annotation> QUALIFIER_CLASS = (Class<Annotation>) RAW_QUALIFIER_CLASS;
+
+    public static <T extends AnnotatedElement> boolean shouldInject(T annotatedElement) {
+        return Stream.of(annotatedElement.getDeclaredAnnotations()).anyMatch(a -> Inject.class.isInstance(a));
+    }
 
     public static <T extends AnnotatedElement> List<T> findInject(T... annotatedElements) {
         List<T> injectAnnotatedElements = new ArrayList<>();
         for (T annotatedElement : annotatedElements) {
-            if (annotatedElement.getDeclaredAnnotation(Inject.class) != null) {
+            if (Stream.of(annotatedElement.getDeclaredAnnotations()).anyMatch(a -> Inject.class.isInstance(a))) {
                 injectAnnotatedElements.add(annotatedElement);
             }
         }
