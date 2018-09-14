@@ -30,8 +30,14 @@ class DefaultContext implements Context {
 
     @Override
     public <T> T get(Meta<T> meta, Injector injector) throws ContextException {
-        if (meta.getClazz().getInject().getScoped() != null) {
-            return scopedContext.get(meta, injector);
+        return get(meta, meta.getClazz().getInject(), injector);
+    }
+
+    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ContextException {
+        if (inject.getScoped() != null) {
+            return scopedContext.get(meta, inject, injector);
+        } else if (meta.getClazz().getInject().getScoped() != null) {
+            return scopedContext.get(meta, meta.getClazz().getInject(), injector);
         }
         return construct(meta, injector);
     }
@@ -119,7 +125,7 @@ class DefaultContext implements Context {
                         injectFields(t, member, injector);
                         injectMethods(t, member, injector);
                     } catch (ContextException e) {
-                        e.unchecked();
+                        throw e.unchecked();
                     }
                 });
     }
@@ -130,7 +136,7 @@ class DefaultContext implements Context {
             Meta.Parameter parameterMeta = fieldMeta.getParameter();
             if (Meta.InstanceParameter.class.isInstance(parameterMeta)) {
                 Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(parameterMeta);
-                fieldValue = get(instanceParameter.getMeta(), injector);
+                fieldValue = get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
             } else {
                 fieldValue = getDefaultProvider(Meta.ProviderParameter.class.cast(parameterMeta), injector);
             }
@@ -146,7 +152,8 @@ class DefaultContext implements Context {
     private <T> void injectMethods(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
         for (Meta.Method method : metaMembers.getMethods()) {
             try {
-                method.getMethod().invoke(t, getParameters(method.getParameters(), injector));
+                Object[] args = getParameters(method.getParameters(), injector);
+                method.getMethod().invoke(t, args);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new ContextException("failed to inject method: " + method, e);
             }
@@ -162,7 +169,7 @@ class DefaultContext implements Context {
                 args[i] = getDefaultProvider(providerParameter, injector);
             } else {
                 Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(paramMeta);
-                args[i] = get(instanceParameter.getMeta(), injector);
+                args[i] = get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
             }
         }
         return args;

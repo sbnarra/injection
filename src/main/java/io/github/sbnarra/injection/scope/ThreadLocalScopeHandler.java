@@ -17,7 +17,7 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
     }
 
     @Override
-    public <T> T get(Meta<T> meta, Injector injector) throws ScopeHandlerException {
+    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ScopeHandlerException {
         Map<Meta<?>, Object> map = getMap();
 
         Object obj = map.get(meta);

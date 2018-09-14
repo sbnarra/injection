@@ -29,18 +29,18 @@ public class ScopedContext {
         }
     }
 
-    public <T> T get(Meta<T> meta, Injector injector) throws ContextException {
+    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ContextException {
         try {
-            return getScopeHandler(meta).get(meta, injector);
+            return getScopeHandler(meta, inject).get(meta, inject, injector);
         } catch (ScopeHandlerException e) {
             throw new ContextException("error getting instance using scope handler", e);
         }
     }
 
-    private <T> ScopeHandler getScopeHandler(Meta<T> meta) throws ContextException {
+    private <T> ScopeHandler getScopeHandler(Meta<T> meta, Meta.Inject inject) throws ContextException {
         Set<Class<?>> keys = scopes.keySet();
 
-        Annotation scopeAnn = meta.getClazz().getInject().getScoped();
+        Annotation scopeAnn = inject.getScoped();
         Class<? extends Annotation> annotationType = scopeAnn.annotationType();
 
         List<Class<?>> matching = keys.stream()

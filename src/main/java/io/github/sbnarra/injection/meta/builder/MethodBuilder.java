@@ -86,9 +86,7 @@ class MethodBuilder {
 
     private void addInjectMethod(Method method, boolean isPublic, List<Method> injectMethods) {
         if (Annotations.shouldInject(method)) {
-            if (!isPublic) {
-                method.setAccessible(true);
-            }
+            method.setAccessible(true);
             injectMethods.add(method);
         }
     }

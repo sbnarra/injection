@@ -16,7 +16,7 @@ public class SingletonScopeHandler implements ScopeHandler {
     }
 
     @Override
-    public <T> T get(Meta<T> meta, Injector injector) throws ScopeHandlerException {
+    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ScopeHandlerException {
         Object singleton = singletons.get(meta);
         if (singleton != null) {
             return meta.getClazz().getBuildClass().cast(singleton);

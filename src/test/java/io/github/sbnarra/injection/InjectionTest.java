@@ -1,5 +1,6 @@
 package io.github.sbnarra.injection;
 
+import io.github.sbnarra.injection.core.Debug;
 import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
@@ -16,6 +17,7 @@ import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class InjectionTest {
 
@@ -49,6 +51,7 @@ public class InjectionTest {
         ExampleMembers exampleMembers = injector.get(ExampleMembers.class);
         Assertions.assertEquals(strOne, exampleMembers.fieldParam);
         Assertions.assertEquals(strTwo, exampleMembers.constructorParam);
+        Debug.log(exampleMembers);
         Assertions.assertEquals(strThree, exampleMembers.methodParam);
     }
 
@@ -67,7 +70,7 @@ public class InjectionTest {
 
         @Inject
         public void setMethodParam(@Named(NAME_3) String methodParam) {
-            this.methodParam = methodParam;
+            this.methodParam = Objects.requireNonNull(methodParam);
         }
     }
 

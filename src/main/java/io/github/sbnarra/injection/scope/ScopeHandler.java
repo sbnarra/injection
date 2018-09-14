@@ -5,5 +5,5 @@ import io.github.sbnarra.injection.meta.Meta;
 
 public interface ScopeHandler {
     void destoryScope() throws ScopeHandlerException;
-    <T> T get(Meta<T> meta, Injector injector) throws ScopeHandlerException;
+    <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ScopeHandlerException;
 }
