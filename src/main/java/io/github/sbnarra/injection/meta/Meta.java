@@ -12,11 +12,13 @@ import lombok.Value;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
 @Builder
 public class Meta<T> {
 
+    private final AtomicBoolean staticInjected = new AtomicBoolean(false);
     private final T instance;
 
     private final Class<T> clazz;

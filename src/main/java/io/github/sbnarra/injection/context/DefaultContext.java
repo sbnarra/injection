@@ -19,14 +19,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 class DefaultContext implements Context {
     private final Registry registry;
     private final Graph graph;
-
     private final ScopedContext scopedContext;
+    private final List<Meta.Field> staticFieldMetas;
+    private final List<Meta.Method> staticMethodMetas;
 
     @Override
     public <T> T get(Meta<T> meta, Injector injector) throws ContextException {
@@ -50,6 +52,12 @@ class DefaultContext implements Context {
     @Override
     public Registry registry() {
         return registry;
+    }
+
+    @Override
+    public void initStaticMembers(Injector injector) throws ContextException {
+        injectFields(null, staticFieldMetas, injector);
+        injectMethods(null, staticMethodMetas, injector);
     }
 
     @Override
@@ -112,26 +120,24 @@ class DefaultContext implements Context {
                     + constructor + ",args=" + Arrays.toString(args), e);
         }
 
-        injectMembers(newInstance, meta, injector);
+        injectMembers(newInstance, meta.getMembers(), meta.getStaticInjected(), injector);
         return newInstance;
     }
 
-    private <T> void injectMembers(T t, Meta<T> meta, Injector injector) throws ContextException {
-        // TODO - store in reverser order
-        IntStream.range(0, meta.getMembers().size())
-                .mapToObj(i -> meta.getMembers().get(meta.getMembers().size() - i - 1))
+    private <T> void injectMembers(T t, List<Meta.Members> members, AtomicBoolean injectStaticMembers, Injector injector) throws ContextException {
+        IntStream.range(0, members.size()).mapToObj(i -> members.get(members.size() - i - 1)) // iterate in reverse order, child to parent structure
                 .forEach(member -> {
                     try {
-                        injectFields(t, member, injector);
-                        injectMethods(t, member, injector);
+                        injectFields(t, member.getFields(), injector);
+                        injectMethods(t, member.getMethods(), injector);
                     } catch (ContextException e) {
                         throw e.unchecked();
                     }
                 });
     }
 
-    private <T> void injectFields(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
-        for (Meta.Field fieldMeta : metaMembers.getFields()) {
+    private <T> void injectFields(T t, List<Meta.Field> fields, Injector injector) throws ContextException {
+        for (Meta.Field fieldMeta : fields) {
             Object fieldValue;
             Meta.Parameter parameterMeta = fieldMeta.getParameter();
             if (Meta.InstanceParameter.class.isInstance(parameterMeta)) {
@@ -149,8 +155,8 @@ class DefaultContext implements Context {
         }
     }
 
-    private <T> void injectMethods(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
-        for (Meta.Method method : metaMembers.getMethods()) {
+    private <T> void injectMethods(T t, List<Meta.Method> methods, Injector injector) throws ContextException {
+        for (Meta.Method method : methods) {
             try {
                 Object[] args = getParameters(method.getParameters(), injector);
                 method.getMethod().invoke(t, args);

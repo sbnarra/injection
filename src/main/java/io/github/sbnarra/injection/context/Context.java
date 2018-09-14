@@ -30,4 +30,6 @@ public interface Context {
     ScopedContext scopedContext();
 
     Registry registry();
+
+    void initStaticMembers(Injector injector) throws ContextException;
 }

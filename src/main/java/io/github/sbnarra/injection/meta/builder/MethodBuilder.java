@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class MethodBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
-    List<Meta.Method> build(Class<?> theClass, Context context, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
-        return gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().map(method -> {
+    void build(Class<?> theClass, Context context, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods,
+                            List<Meta.Method> methodMetas, List<Meta.Method> staticMethodMetas) throws BuilderException {
+        gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().forEach(method -> {
             List<Meta.Parameter> parameters = null;
             try {
                 parameters = parametersMetaBuilder.buildParameters(method, context);
@@ -27,11 +27,16 @@ class MethodBuilder {
                 e.unchecked();
             }
 
-            return Meta.Method.builder()
+            Meta.Method methodMeta = Meta.Method.builder()
                     .method(method)
                     .parameters(parameters)
                     .build();
-        }).collect(Collectors.toList());
+            if (Modifier.isStatic(method.getModifiers())) {
+                staticMethodMetas.add(methodMeta);
+            } else {
+                methodMetas.add(methodMeta);
+            }
+        });
     }
 
     private List<Method> gatherMethods(Class<?> theClass, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {

@@ -13,7 +13,13 @@ public class InjectorFactory {
     public static Injector create(Registration... registrations) throws InjectException {
         Registry registry = createRegistry(registrations);
         Context context = createContext(registry);
-        return new DefaultInjector(context);
+        Injector injector = new DefaultInjector(context);
+        try {
+            context.initStaticMembers(injector);
+        } catch (ContextException e) {
+            throw new InjectException("error injecting static members", e);
+        }
+        return injector;
     }
 
     private static Registry createRegistry(Registration[] registrations) throws InjectException {

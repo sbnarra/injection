@@ -11,6 +11,7 @@ import lombok.ToString;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
@@ -19,6 +20,8 @@ public class Graph {
 
     private final Set<Node<?>> rootNodes = new HashSet<>();
     private final MetaBuilder metaBuilder;
+    private final List<Meta.Field> staticFieldMetas;
+    private final List<Meta.Method> staticMethodMetas;
 
     public Node<?> addNode(TypeBinding<?> typeBinding, Context context) throws GraphException {
         Node<?> node = find(typeBinding.getType(), typeBinding.getQualifier());
@@ -28,7 +31,7 @@ public class Graph {
 
         Meta<?> meta;
         try {
-            meta = metaBuilder.build(typeBinding, context);
+            meta = metaBuilder.build(typeBinding, context, staticFieldMetas, staticMethodMetas);
         } catch (BuilderException e) {
             throw new GraphException("error building node meta: " + typeBinding, e);
         }
