@@ -1,8 +1,5 @@
 package io.github.sbnarra.injection;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.name.Names;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
 import junit.framework.Test;
@@ -18,71 +15,15 @@ import org.atinject.tck.auto.V8Engine;
 import org.atinject.tck.auto.accessories.SpareTire;
 
 public class Jsr330TckTest {
-
-
-    /*
-     * <p>Configure the injector as follows:
-     *
-     * <ul>
-     *   <li>{@link org.atinject.tck.auto.Car} is implemented by
-     *       {@link org.atinject.tck.auto.Convertible Convertible}.
-     *   <li>{@link org.atinject.tck.auto.Drivers @Drivers}
-     *       {@link org.atinject.tck.auto.Seat Seat} is
-     *       implemented by {@link org.atinject.tck.auto.DriversSeat DriversSeat}.
-     *   <li>{@link org.atinject.tck.auto.Seat Seat} is
-     *       implemented by {@link org.atinject.tck.auto.Seat Seat} itself, and
-     *       {@link org.atinject.tck.auto.Tire Tire} by
-     *       {@link org.atinject.tck.auto.Tire Tire} itself
-     *       (not subclasses).
-     *   <li>{@link org.atinject.tck.auto.Engine Engine} is implemented by
-     *       {@link org.atinject.tck.auto.V8Engine V8Engine}.
-     *   <li>{@link javax.inject.Named @Named("spare")}
-     *       {@link org.atinject.tck.auto.Tire Tire} is implemented by
-     *       {@link org.atinject.tck.auto.accessories.SpareTire SpareTire}.
-     *   <li>The following classes may also be injected directly:
-     *       {@link org.atinject.tck.auto.accessories.Cupholder Cupholder},
-     *       {@link org.atinject.tck.auto.accessories.SpareTire SpareTire}, and
-     *       {@link org.atinject.tck.auto.FuelTank FuelTank}.
-     * </ul>
-     */
     public static Test suite() throws InjectException {
-        //return Tck.testsFor(getGuiceCar(), false, true);
-        return Tck.testsFor(getCar(), false, true);
-    }
-
-    public static Car getCar() throws InjectException {
-        return getInjector().get(Car.class);
-    }
-
-    public static Injector getInjector() throws InjectException {
-        return InjectorFactory.create(new Registration() {
+        return Tck.testsFor(InjectorFactory.create(new Registration() {
             @Override
             public void register() throws RegistryException {
                 bind(Car.class).with(Convertible.class);
-                bind(Seat.class).qualified( Drivers.class).with(DriversSeat.class);
-                // bind(Seat.class).with(Seat.class);
-                // bind(Tire.class).with(Tire.class);
                 bind(Engine.class).with(V8Engine.class);
                 bind(Tire.class).named("spare").with(SpareTire.class);
+                bind(Seat.class).qualified( Drivers.class).with(DriversSeat.class);
             }
-        });
-    }
-
-    public static Car getGuiceCar() {
-        return getGuiceInjector().getInstance(Car.class);
-    }
-
-    public static com.google.inject.Injector getGuiceInjector() {
-        return Guice.createInjector(new AbstractModule() {
-            @Override
-            public void configure() {
-                bind(Car.class).to(Convertible.class);
-                bind(Seat.class).annotatedWith( Drivers.class).to(DriversSeat.class);
-                // bind(Seat.class).with(Seat.class);
-                // bind(Tire.class).with(Tire.class);
-                bind(Engine.class).to(V8Engine.class);
-                bind(Tire.class).annotatedWith(Names.named("spare")).to(SpareTire.class);
-            }
-        });
+        }).get(Car.class), true, true);
     }
 }

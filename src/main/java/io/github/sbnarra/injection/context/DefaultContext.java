@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 class DefaultContext implements Context {
@@ -109,17 +110,21 @@ class DefaultContext implements Context {
         return newInstance;
     }
 
-    int c = 0;
-
     private <T> void injectMembers(T t, Meta<T> meta, Injector injector) throws ContextException {
-        List<Meta.Members> members = meta.getMembers();
-        int cc = c++;
-        for (int i = 0; i < members.size(); i++) {
-            injectMembers(t, members.get(i), injector);
-        }
+        // TODO - store in reverser order
+        IntStream.range(0, meta.getMembers().size())
+                .mapToObj(i -> meta.getMembers().get(meta.getMembers().size() - i - 1))
+                .forEach(member -> {
+                    try {
+                        injectFields(t, member, injector);
+                        injectMethods(t, member, injector);
+                    } catch (ContextException e) {
+                        e.unchecked();
+                    }
+                });
     }
 
-    private <T> void injectMembers(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
+    private <T> void injectFields(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
         for (Meta.Field fieldMeta : metaMembers.getFields()) {
             Object fieldValue;
             Meta.Parameter parameterMeta = fieldMeta.getParameter();
@@ -136,7 +141,9 @@ class DefaultContext implements Context {
                 throw new ContextException("failed to inject field: " + fieldMeta, e);
             }
         }
+    }
 
+    private <T> void injectMethods(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
         for (Meta.Method method : metaMembers.getMethods()) {
             try {
                 method.getMethod().invoke(t, getParameters(method.getParameters(), injector));

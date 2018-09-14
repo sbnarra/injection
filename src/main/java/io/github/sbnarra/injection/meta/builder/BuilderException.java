@@ -9,7 +9,6 @@ public class BuilderException extends Exception {
         super(msg, e);
     }
 
-
     public BuilderException.Unchecked unchecked() {
         return new BuilderException.Unchecked(this);
     }
