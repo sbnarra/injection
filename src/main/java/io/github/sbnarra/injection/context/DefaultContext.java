@@ -53,7 +53,7 @@ class DefaultContext implements Context {
                 return node;
             }
         } catch (GraphException e) {
-            throw new ContextException("error looking up type: " + theType + ": qualifier: " + qualifier); // $COVERAGE-IGNORE$
+            throw new ContextException("error looking up type: " + theType + ": qualifier: " + qualifier);
         }
 
         try {
@@ -61,18 +61,18 @@ class DefaultContext implements Context {
                 try {
                     Helper.checkBuildability(theType);
                 } catch (Helper.HelperException e) {
-                    throw new ContextException(e.getMessage()); // $COVERAGE-IGNORE$
+                    throw new ContextException(e.getMessage());
                 }
                 return graph.addNode(selfBinding(theType), this);
             }
 
             TypeBinding<?> typeBinding = registry.find(theType, qualifier);
             if (typeBinding == null) {
-                throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier); // $COVERAGE-IGNORE$
+                throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
             }
             return graph.addNode(typeBinding, this);
         } catch (GraphException e) {
-            throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e); // $COVERAGE-IGNORE$
+            throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
         }
     }
 
@@ -82,7 +82,7 @@ class DefaultContext implements Context {
                     .with(theType)
                     .getBinding();
         } catch (RegistryException e) {
-            throw new ContextException("error creating self-binding: " + theType, e); // $COVERAGE-IGNORE$
+            throw new ContextException("error creating self-binding: " + theType, e);
         }
     }
 
@@ -101,7 +101,7 @@ class DefaultContext implements Context {
         try {
             newInstance = constructor.newInstance(args);
         } catch (IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ContextException("error building new instance using: constructor: " // $COVERAGE-IGNORE$
+            throw new ContextException("error building new instance using: constructor: "
                     + constructor + ",args=" + Arrays.toString(args), e);
         }
 
@@ -109,29 +109,39 @@ class DefaultContext implements Context {
         return newInstance;
     }
 
+    int c = 0;
+
     private <T> void injectMembers(T t, Meta<T> meta, Injector injector) throws ContextException {
-        for (Meta.Field field : meta.getField()) {
+        List<Meta.Members> members = meta.getMembers();
+        int cc = c++;
+        for (int i = 0; i < members.size(); i++) {
+            injectMembers(t, members.get(i), injector);
+        }
+    }
+
+    private <T> void injectMembers(T t, Meta.Members metaMembers, Injector injector) throws ContextException {
+        for (Meta.Field fieldMeta : metaMembers.getFields()) {
             Object fieldValue;
-            Meta.Parameter parameter = field.getParameter();
-            if (Meta.InstanceParameter.class.isInstance(parameter)) {
-                Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(parameter);
+            Meta.Parameter parameterMeta = fieldMeta.getParameter();
+            if (Meta.InstanceParameter.class.isInstance(parameterMeta)) {
+                Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(parameterMeta);
                 fieldValue = get(instanceParameter.getMeta(), injector);
             } else {
-                fieldValue = getDefaultProvider(Meta.ProviderParameter.class.cast(parameter), injector);
+                fieldValue = getDefaultProvider(Meta.ProviderParameter.class.cast(parameterMeta), injector);
             }
 
             try {
-                field.getField().set(t, fieldValue);
+                fieldMeta.getField().set(t, fieldValue);
             } catch (IllegalAccessException e) {
-                throw new ContextException("failed to inject field: " + field, e); // $COVERAGE-IGNORE$
+                throw new ContextException("failed to inject field: " + fieldMeta, e);
             }
         }
 
-        for (Meta.Method method : meta.getMethod()) {
+        for (Meta.Method method : metaMembers.getMethods()) {
             try {
                 method.getMethod().invoke(t, getParameters(method.getParameters(), injector));
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new ContextException("failed to inject method: " + method, e); // $COVERAGE-IGNORE$
+                throw new ContextException("failed to inject method: " + method, e);
             }
         }
     }

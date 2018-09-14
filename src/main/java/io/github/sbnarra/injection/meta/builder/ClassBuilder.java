@@ -15,6 +15,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.Morph;
 
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
@@ -26,6 +27,9 @@ class ClassBuilder {
 
     <T> Meta.Class<T> build(TypeBinding<T> typeBinding) throws BuilderException {
         Class<?> contractClass = typeBinding.getInstance().getClass();
+        if (Modifier.isAbstract(contractClass.getModifiers())) {
+            throw new BuilderException("is abstract: " + contractClass);
+        }
         return Meta.Class.<T>builder()
                 .contractClass(contractClass)
                 .inject(injectBuilder.build(contractClass, typeBinding))

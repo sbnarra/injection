@@ -15,8 +15,13 @@ public class MetaBuilderFactory {
         ConstructorBuilder constructorBuilder = createConstructorBuilder(parametersMetaBuilder);
         MethodBuilder methodBuilder = createMethodBuilder(parametersMetaBuilder);
         FieldBuilder fieldBuilder = createFieldBuilder(parametersMetaBuilder);
+        MembersBuilder membersBuilder = createMembersBuilder(methodBuilder, fieldBuilder);
         AspectBuilder aspectBuilder = createAspectBuilder();
-        return new MetaBuilder(classBuilder, constructorBuilder, methodBuilder, fieldBuilder, aspectBuilder);
+        return new MetaBuilder(classBuilder, constructorBuilder, membersBuilder, aspectBuilder);
+    }
+
+    private MembersBuilder createMembersBuilder(MethodBuilder methodBuilder, FieldBuilder fieldBuilder) {
+        return new MembersBuilder(methodBuilder, fieldBuilder);
     }
 
     private InjectBuilder createInjectBuilder() {

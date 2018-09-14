@@ -13,8 +13,7 @@ public class MetaBuilder {
 
     private final ClassBuilder classBuilder;
     private final ConstructorBuilder constructorBuilder;
-    private final MethodBuilder methodBuilder;
-    private final FieldBuilder fieldBuilder;
+    private final MembersBuilder membersBuilder;
     private final AspectBuilder aspectBuilder;
 
     public <T> Meta<T> build(TypeBinding<T> binding, Context context) throws BuilderException {
@@ -30,8 +29,7 @@ public class MetaBuilder {
                 List<Meta.Aspect> aspectMetas = aspectBuilder.build(type.getTheClass(), context.registry().getInterceptionBindings());
                 classMeta = classBuilder.build(binding, aspectMetas);
                 builder.constructor(constructorBuilder.build(classMeta, context))
-                        .field(fieldBuilder.build(classMeta, context))
-                        .method(methodBuilder.build(classMeta, context))
+                        .members(membersBuilder.build(classMeta.getContractClass(), context))
                         .aspect(aspectMetas);
             }
         } catch (BuilderException e) {

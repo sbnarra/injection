@@ -22,7 +22,7 @@ import java.util.List;
 class ParametersMetaBuilder {
     private final InjectBuilder injectBuilder;
 
-    List<Meta.Parameter> getParameters(Executable executable, Context context) throws BuilderException {
+    List<Meta.Parameter> buildParameters(Executable executable, Context context) throws BuilderException {
         List<Meta.Parameter> metas = new ArrayList<>();
         java.lang.reflect.Parameter[] parameters = executable.getParameters();
 
@@ -36,7 +36,7 @@ class ParametersMetaBuilder {
             } catch (AnnotationsException e) {
                 throw new BuilderException("error finding qualifier", e);
             }
-            metas.add(getParameter(type, type.getParameterizedType(), qualifier, scope, context));
+            metas.add(buildParameter(type, type.getParameterizedType(), qualifier, scope, context));
         }
 
         if (executable.getParameterCount() != metas.size()) {
@@ -46,7 +46,7 @@ class ParametersMetaBuilder {
         return metas;
     }
 
-    public <T> Meta.Parameter getParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier, Annotation scope, Context context) throws BuilderException {
+    <T> Meta.Parameter buildParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier, Annotation scope, Context context) throws BuilderException {
         Type<?> paramType = new Type<Object>(type) {};
 
         if (paramType.isProvider()) {

@@ -21,8 +21,7 @@ public class Meta<T> {
 
     private final Class<T> clazz;
     private final Constructor<T> constructor;
-    private final List<Field> field;
-    private final List<Method> method;
+    private final List<Members> members;
     private final List<Aspect> aspect;
 
     @Value
@@ -51,7 +50,8 @@ public class Meta<T> {
 
     @Value
     @Builder
-    public static class Members<T> {
+    public static class Members {
+        private final java.lang.Class<?> theClass;
         private final List<Field> fields;
         private final List<Method> methods;
     }

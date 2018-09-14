@@ -1,5 +1,8 @@
 package io.github.sbnarra.injection;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.name.Names;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
 import junit.framework.Test;
@@ -43,14 +46,15 @@ public class Jsr330TckTest {
      * </ul>
      */
     public static Test suite() throws InjectException {
-        Injector injector = getInjector();
-
-        return Tck.testsFor(injector.get(Car.class),
-                true /* supportsStatic */,
-                true /* supportsPrivate */);
+        //return Tck.testsFor(getGuiceCar(), false, true);
+        return Tck.testsFor(getCar(), false, true);
     }
 
-    private static Injector getInjector() throws InjectException {
+    public static Car getCar() throws InjectException {
+        return getInjector().get(Car.class);
+    }
+
+    public static Injector getInjector() throws InjectException {
         return InjectorFactory.create(new Registration() {
             @Override
             public void register() throws RegistryException {
@@ -60,6 +64,24 @@ public class Jsr330TckTest {
                 // bind(Tire.class).with(Tire.class);
                 bind(Engine.class).with(V8Engine.class);
                 bind(Tire.class).named("spare").with(SpareTire.class);
+            }
+        });
+    }
+
+    public static Car getGuiceCar() {
+        return getGuiceInjector().getInstance(Car.class);
+    }
+
+    public static com.google.inject.Injector getGuiceInjector() {
+        return Guice.createInjector(new AbstractModule() {
+            @Override
+            public void configure() {
+                bind(Car.class).to(Convertible.class);
+                bind(Seat.class).annotatedWith( Drivers.class).to(DriversSeat.class);
+                // bind(Seat.class).with(Seat.class);
+                // bind(Tire.class).with(Tire.class);
+                bind(Engine.class).to(V8Engine.class);
+                bind(Tire.class).annotatedWith(Names.named("spare")).to(SpareTire.class);
             }
         });
     }

@@ -15,7 +15,7 @@ class ConstructorBuilder {
 
     <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context) throws BuilderException {
         Constructor<? extends T> constructor = find(classMeta);
-        List<Meta.Parameter> fieldMeta = parametersMetaBuilder.getParameters(constructor, context);
+        List<Meta.Parameter> fieldMeta = parametersMetaBuilder.buildParameters(constructor, context);
 
         constructor.setAccessible(true);
         return Meta.Constructor.<T>builder()
