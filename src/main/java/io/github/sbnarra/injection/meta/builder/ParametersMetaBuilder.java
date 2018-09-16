@@ -3,7 +3,6 @@ package io.github.sbnarra.injection.meta.builder;
 import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
-import io.github.sbnarra.injection.context.graph.Node;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.type.Parameterized;
 import io.github.sbnarra.injection.type.Type;
@@ -42,34 +41,35 @@ class ParametersMetaBuilder {
         return metas;
     }
 
-    <T> Meta.Parameter buildParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier,
-                                      Annotation scope, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
+    Meta.Parameter buildParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier,
+                                  Annotation scope, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         Type<?> paramType = new Type<Object>(type) {};
 
         if (paramType.isProvider()) {
             if (!paramType.isParameterized()) {
                 throw new BuilderException("non-parameterized provider: " + type);
             }
-
             Parameterized<?> parameterized = paramType.getParameterized();
             List<Type<?>> generics = parameterized.getGenerics();
-            Type<?> providerType = generics.get(0);
-
-            return Meta.ProviderParameter.<T>builder()
-                   .type(providerType)
-                   .inject(injectBuilder.build(annotatedElement))
-                   .build();
-        } else {
-            Meta.InstanceParameter.Builder builder = Meta.InstanceParameter.builder();
-            Node<?> node;
-            try {
-                node = context.lookup(paramType, qualifier, scope, staticsMembers);
-            } catch (ContextException e) {
-                throw new BuilderException("error looking up type: " + type + ": qualifier: " + qualifier, e);
-            }
-            builder.meta(node.getMeta());
-            builder.inject(injectBuilder.build(annotatedElement));
-            return builder.build();
+            return Meta.ProviderParameter.builder()
+                    .type(generics.get(0))
+                    .inject(injectBuilder.build(annotatedElement))
+                    .build();
         }
+        return buildInstanceParameter(paramType, annotatedElement, type, qualifier, scope, context, staticsMembers);
+    }
+
+    private Meta.InstanceParameter buildInstanceParameter(Type<?> paramType, AnnotatedElement annotatedElement, java.lang.reflect.Type type,
+                                                          Annotation qualifier, Annotation scope, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
+        Meta.InstanceParameter.Builder builder = Meta.InstanceParameter.builder();
+        Meta<?> meta;
+        try {
+            meta = context.lookup(paramType, qualifier, scope, staticsMembers);
+        } catch (ContextException e) {
+            throw new BuilderException("error looking up type: " + type + ": qualifier: " + qualifier, e);
+        }
+        builder.meta(meta);
+        builder.inject(injectBuilder.build(annotatedElement));
+        return builder.build();
     }
 }

@@ -3,10 +3,9 @@ package io.github.sbnarra.injection.registry;
 import io.github.sbnarra.injection.type.Type;
 import lombok.Setter;
 
-@Setter
 public abstract class Registration {
 
-    private Registry registry;
+    @Setter private Registry registry;
 
     public abstract void register() throws RegistryException;
 

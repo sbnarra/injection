@@ -11,8 +11,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.util.Collections.singletonList;
-
 public class Annotations {
     private final Predicate<? super AnnotatedElement> hasDeclaredInjectAnnotation;
     private final Predicate<? super AnnotatedElement> hasDeclaredScopeAnnotation;
@@ -20,7 +18,7 @@ public class Annotations {
     private final Predicate<? super Annotation> annotationAnnotatedWithQualifier;
 
     public Annotations(Class<?> injectClass, Class<?> scopeClass, Class<?> qualifierClass) {
-        this(singletonList(injectClass), singletonList(scopeClass), singletonList(qualifierClass));
+        this(isClass(injectClass), isClass(scopeClass), isClass(qualifierClass));
     }
 
     public Annotations(List<Class<?>> injectClass, List<Class<?>> scopeClass, List<Class<?>> qualifierClass) {
@@ -47,11 +45,11 @@ public class Annotations {
     }
 
     public <T extends AnnotatedElement> List<T> findAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
-        return Arrays.stream(annotatedElements).filter(hasDeclaredInjectAnnotation).collect(Collectors.toList());
+        return findAllMatching(hasDeclaredInjectAnnotation, annotatedElements);
     }
 
-    public <T extends AnnotatedElement> List<Integer> findIndexesOfAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
-        return IntStream.range(0, annotatedElements.length).filter(i -> hasInjectAnnotation(annotatedElements[i])).boxed().collect(Collectors.toList());
+    public <T extends AnnotatedElement> List<Integer> findIndexesOfAnnotatedElementsWithInjectAnnotation(T[] elements) {
+        return IntStream.range(0, elements.length).filter(i -> hasInjectAnnotation(elements[i])).boxed().collect(Collectors.toList());
     }
 
     /*
@@ -66,7 +64,7 @@ public class Annotations {
         return findFirstMatching(annotationAnnotatedWithScope, annotations);
     }
 
-    public <T extends AnnotatedElement> Annotation findScopeAnnotation(T annotatedElement) {
+    public Annotation findScopeAnnotation(AnnotatedElement annotatedElement) {
         return findScopeAnnotation(annotatedElement.getDeclaredAnnotations());
     }
 
@@ -86,8 +84,12 @@ public class Annotations {
      * generic helper methods
      */
 
-    private static Annotation findFirstMatching(Predicate<? super Annotation> annotationAnnotatedWith, Annotation[] annotations) {
-        return Arrays.stream(annotations).filter(annotationAnnotatedWith).findFirst().orElse(null);
+    private static <T> List<T> findAllMatching(Predicate<? super T> condition, T[] items) {
+        return Arrays.stream(items).filter(condition).collect(Collectors.toList());
+    }
+
+    private static <T> T findFirstMatching(Predicate<? super T> condition, T[] items) {
+        return Arrays.stream(items).filter(condition).findFirst().orElse(null);
     }
 
     private static Predicate<? super Annotation> testAnnotation(Predicate<? super AnnotatedElement> annotatedElementAnnotatedWith) {

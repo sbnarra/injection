@@ -2,12 +2,14 @@ package io.github.sbnarra.injection.context;
 
 import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.meta.Meta;
+import io.github.sbnarra.injection.misc.UncheckedException;
 import lombok.NonNull;
 
 import javax.inject.Provider;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -56,51 +58,77 @@ public class DefaultObjectBuilder implements ObjectBuilder {
     }
 
     private <T> void injectFields(T t, List<Meta.Field> fields, Injector injector) throws ContextException {
-        for (Meta.Field fieldMeta : fields) {
+        checkedParallelForEach(fields, injectField(t, injector));
+    }
+
+    private <T> Consumer<Meta.Field> injectField(T t, Injector injector) {
+        return fieldMeta -> {
             Object fieldValue;
             Meta.Parameter parameterMeta = fieldMeta.getParameter();
-            if (Meta.InstanceParameter.class.isInstance(parameterMeta)) {
-                Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(parameterMeta);
-                fieldValue = injector.context().get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
+            if (parameterMeta instanceof Meta.InstanceParameter) {
+                Meta.InstanceParameter instanceParameter = (Meta.InstanceParameter) parameterMeta;
+                try {
+                    fieldValue = injector.context().get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
+                } catch (ContextException e) {
+                    throw e.unchecked();
+                }
             } else {
-                fieldValue = getDefaultProvider(Meta.ProviderParameter.class.cast(parameterMeta), injector);
+                fieldValue = getDefaultProvider((Meta.ProviderParameter) parameterMeta, injector);
             }
 
             try {
                 fieldMeta.getField().set(t, fieldValue);
             } catch (IllegalAccessException e) {
-                throw new ContextException("failed to inject field: " + fieldMeta, e);
+                throw new ContextException("failed to inject field: " + fieldMeta, e).unchecked();
             }
-        }
+        };
     }
 
     private <T> void injectMethods(T t, List<Meta.Method> methods, Injector injector) throws ContextException {
-        for (Meta.Method method : methods) {
+        checkedParallelForEach(methods, injectMethod(t, injector));
+    }
+
+    private <T> Consumer<Meta.Method> injectMethod(T t, Injector injector) {
+        return method -> {
             try {
-                Object[] args = getParameters(method.getParameters(), injector);
-                method.getMethod().invoke(t, args);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new ContextException("failed to inject method: " + method, e);
+                try {
+                    Object[] args = getParameters(method.getParameters(), injector);
+                    method.getMethod().invoke(t, args);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new ContextException("failed to inject method: " + method, e);
+                }
+            } catch (ContextException e) {
+                throw e.unchecked();
             }
-        }
+        };
     }
 
     private Object[] getParameters(List<Meta.Parameter> argMetas, Injector injector) throws ContextException {
-        Object[] args = new Object[argMetas.size()];
-        for (int i = 0; i < argMetas.size(); i++) {
-            Meta.Parameter paramMeta = argMetas.get(i);
-            if (Meta.ProviderParameter.class.isInstance(paramMeta)) {
-                Meta.ProviderParameter<?> providerParameter = Meta.ProviderParameter.class.cast(paramMeta);
-                args[i] = getDefaultProvider(providerParameter, injector);
-            } else {
-                Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(paramMeta);
-                args[i] = injector.context().get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
-            }
+        try {
+            return IntStream.range(0, argMetas.size()).parallel().mapToObj(i -> {
+                Meta.Parameter paramMeta = argMetas.get(i);
+                if (paramMeta instanceof Meta.ProviderParameter) {
+                    Meta.ProviderParameter<?> providerParameter = (Meta.ProviderParameter) paramMeta;
+                    return getDefaultProvider(providerParameter, injector);
+                } else {
+                    Meta.InstanceParameter instanceParameter = (Meta.InstanceParameter) paramMeta;
+                    try {
+                        return injector.context().get(instanceParameter.getMeta(), instanceParameter.getInject(), injector);
+                    } catch (ContextException e) {
+                        throw e.unchecked();
+                    }
+                }
+            }).toArray();
+        } catch (ContextException.Unchecked e) {
+            throw e.checked(ContextException.class);
         }
-        return args;
     }
 
     private <T> Provider<T> getDefaultProvider(Meta.ProviderParameter<T> providerParameter, Injector injector) {
         return new DefaultProvider<>(providerParameter.getType(), injector, providerParameter.getInject().getQualifier(), providerParameter.getInject().getScoped());
+    }
+
+    private static <T> void checkedParallelForEach(List<T> list, Consumer<T> consumer) throws ContextException {
+        UncheckedException.checkedParallelForEach(list, consumer, ContextException.class);
     }
 }

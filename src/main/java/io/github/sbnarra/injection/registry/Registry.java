@@ -29,11 +29,11 @@ public class Registry {
         return new TypeBinding<>(type, typeBindings);
     }
 
-    public ScopeBinding scoped(Class<?> scoped) {
+    ScopeBinding scoped(Class<?> scoped) {
         return new ScopeBinding(annotations, scoped, scopeBindings);
     }
 
-    public AspectBinding intercept(Class<?> annotationClass) {
+    AspectBinding intercept(Class<?> annotationClass) {
         return new AspectBinding(annotationClass, interceptionBindings);
     }
 
@@ -41,7 +41,7 @@ public class Registry {
         return find(type.getTheClass(), qualifier);
     }
 
-    public TypeBinding<?> find(Class<?> aClass, Annotation qualifier) {
+    private TypeBinding<?> find(Class<?> aClass, Annotation qualifier) {
         for (TypeBinding<?> typeBinding : typeBindings) {
             if (qualifier != null) {
                 if (typeBinding.getQualifier() == null || !typeBinding.getQualifier().equals(qualifier)) {

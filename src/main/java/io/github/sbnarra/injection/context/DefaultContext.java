@@ -48,10 +48,10 @@ class DefaultContext implements Context {
     }
 
     @Override
-    public <T> Node<?> lookup(Type<T> theType, Annotation qualifier, Annotation scope, Set<Class<?>> staticsMembers) throws ContextException {
+    public <T> Meta<T> lookup(Type<T> theType, Annotation qualifier, Annotation scope, Set<Class<?>> staticsMembers) throws ContextException {
         Node<?> node = graph.find(theType,  qualifier);
         if (node != null) {
-            return node;
+            return (Meta<T>) node.getMeta();
         }
 
         TypeBinding<?> newBinding;
@@ -68,7 +68,7 @@ class DefaultContext implements Context {
                 throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
             }
         }
-        return graph.addNode(newBinding, this, staticsMembers);
+        return (Meta<T>) graph.addNode(newBinding, this, staticsMembers).getMeta();
     }
 
     private <T> TypeBinding<T> selfBinding(Type<T> theType) throws ContextException {

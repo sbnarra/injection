@@ -24,6 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 class ClassBuilder {
     private final ByteBuddy byteBuddy;
     private final InjectBuilder injectBuilder;
+    private final ClassLoader classLoader;
 
     <T> Meta.Class<T> build(TypeBinding<T> typeBinding) throws BuilderException {
         Class<?> contractClass = typeBinding.getInstance().getClass();
@@ -63,7 +64,7 @@ class ClassBuilder {
 
     private Class<?> parameterizedBuild(Type<?> type, Meta.Class.ClassBuilder<?> metaBuilder, List<Meta.Aspect> aspectMetas) {
         DynamicType.Builder<?> builder = applyAspects(byteBuddy.subclass(type.getParameterized().getType()), aspectMetas);
-        Class builderClass = builder.make().load(type.getTheClass().getClassLoader()).getLoaded();
+        Class builderClass = builder.make().load(classLoader).getLoaded();
 
         metaBuilder.buildClass(builderClass);
         Class<?> contractClass = builderClass.getSuperclass();
@@ -75,7 +76,7 @@ class ClassBuilder {
         DynamicType.Builder<? extends T> builder = byteBuddy.subclass(type.getTheClass());
 
         Class<? extends T> builderClass = applyAspects(builder, aspectMetas).make()
-                .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+                .load(classLoader, ClassLoadingStrategy.Default.INJECTION)
                 .getLoaded();
 
         metaBuilder.buildClass((Class<T>) builderClass);

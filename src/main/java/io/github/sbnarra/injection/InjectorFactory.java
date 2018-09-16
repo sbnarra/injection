@@ -20,18 +20,28 @@ public class InjectorFactory {
     }
 
     public static Injector create(Annotations annotations, Registration... registrations) throws InjectException {
+        return create(annotations, new StaticContext(annotations), registrations);
+    }
+
+    public static Injector create(Annotations annotations, StaticContext staticContext, Registration... registrations) throws InjectException {
         Registry registry = createRegistry(registrations, annotations);
 
         Set<Class<?>> staticsMembers = new HashSet<>();
         Context context = createContext(registry, staticsMembers, annotations);
 
         Injector injector = new DefaultInjector(context);
+        if (staticContext != null) {
+            injectStatics(staticContext, staticsMembers, injector);
+        }
+        return injector;
+    }
+
+    private static void injectStatics(StaticContext staticContext, Set<Class<?>> staticsMembers, Injector injector) throws InjectException {
         try {
-            new StaticContext(annotations).inject(staticsMembers, injector);
+            staticContext.inject(staticsMembers, injector);
         } catch (ContextException e) {
             throw new InjectException("error injecting static members", e);
         }
-        return injector;
     }
 
     private static Registry createRegistry(Registration[] registrations, Annotations annotations) throws InjectException {

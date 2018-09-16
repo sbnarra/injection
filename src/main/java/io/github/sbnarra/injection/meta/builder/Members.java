@@ -1,15 +1,10 @@
 package io.github.sbnarra.injection.meta.builder;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class Members {
+class Members {
 
-    public static boolean fieldsEqual(Field f1, Field f2) {
-        return f1.getName().equals(f2.getName());
-    }
-
-    public static boolean methodsEqual(Method m1, Method m2) {
+    static boolean methodsEqual(Method m1, Method m2) {
         return m1.getName().equals(m2.getName()) &&
                 m1.getReturnType().isAssignableFrom(m2.getReturnType()) &&
                 parametersEqual(m1.getParameterTypes(), m2.getParameterTypes());

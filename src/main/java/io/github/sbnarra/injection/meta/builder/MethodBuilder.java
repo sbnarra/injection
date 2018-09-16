@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 class MethodBuilder {
@@ -22,7 +23,7 @@ class MethodBuilder {
     void build(Class<?> theClass, Context context, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods,
                             List<Meta.Method> methodMetas, Set<Class<?>> staticsMembers) throws BuilderException {
         try {
-            gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().forEach(buildMeta(theClass, context, methodMetas, staticsMembers));
+            gatherMethods(theClass, publicProtectedMethods, defaultMethods).forEach(buildMeta(theClass, context, methodMetas, staticsMembers));
         } catch (BuilderException.Unchecked e) {
             throw e.checked(BuilderException.class);
         }
@@ -39,23 +40,24 @@ class MethodBuilder {
 
             if (Modifier.isStatic(method.getModifiers())) {
                 staticsMembers.add(theClass);
-            } else {
-                Meta.Method methodMeta = Meta.Method.builder()
-                        .method(method)
-                        .parameters(parameters)
-                        .build();
-                methodMetas.add(methodMeta);
+                return;
             }
+
+            Meta.Method methodMeta = Meta.Method.builder()
+                    .method(method)
+                    .parameters(parameters)
+                    .build();
+            methodMetas.add(methodMeta);
         };
     }
 
-    private List<Method> gatherMethods(Class<?> theClass, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
+    private List<Method> gatherMethods(Class<?> theClass, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) {
         return gatherMethods(theClass, new ArrayList<>(), publicProtectedMethods, defaultMethods);
     }
 
-    private List<Method> gatherMethods(Class<?> theClass, List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
-        Package classPackage = theClass.getPackage();
-        Arrays.stream(theClass.getDeclaredMethods()).forEach(gatherMethod(classPackage, injectMethods, publicProtectedMethods, defaultMethods));
+    private List<Method> gatherMethods(Class<?> theClass, List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) {
+        Consumer<Method> gatherMethod = gatherMethod(theClass.getPackage(), injectMethods, publicProtectedMethods, defaultMethods);
+        Arrays.stream(theClass.getDeclaredMethods()).forEach(gatherMethod);
         return injectMethods;
     }
 
@@ -77,25 +79,31 @@ class MethodBuilder {
     private void gatherNonStatic(Package classPackage, Method method, int modifier,
                                  List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
         if (Modifier.isPublic(modifier) || Modifier.isProtected(modifier)) {
-            if (publicProtectedMethods.stream().noneMatch(publicProtectedMethod -> Members.methodsEqual(method, publicProtectedMethod))) {
+            Predicate<Method> methodEquals = methodEquals(method);
+            if (publicProtectedMethods.stream().noneMatch(methodEquals)) {
                 addInjectMethod(method, injectMethods);
                 publicProtectedMethods.add(method);
             }
         } else if (Modifier.isPrivate(modifier)) {
             addInjectMethod(method, injectMethods);
         } else if (modifier == 0/*isDefault*/) { // todo - final?
-            List<Method> packageDefaultMethods = defaultMethods.get(classPackage);
-            if (packageDefaultMethods == null) {
-                defaultMethods.put(classPackage, packageDefaultMethods = new ArrayList<>());
-            }
-
-            if (packageDefaultMethods.stream().noneMatch(packageDefaultMethod -> Members.methodsEqual(method, packageDefaultMethod))) {
-                addInjectMethod(method, injectMethods);
-            }
-            packageDefaultMethods.add(method);
+            gatherDefaultNonStatic(classPackage, method, injectMethods, defaultMethods);
         } else {
             throw new BuilderException("unknown modifier: " + Modifier.toString(modifier));
         }
+    }
+
+    private void gatherDefaultNonStatic(Package classPackage, Method method, List<Method> injectMethods, Map<Package, List<Method>> defaultMethods) {
+        List<Method> packageDefaultMethods = defaultMethods.computeIfAbsent(classPackage, k -> new ArrayList<>());
+        Predicate<Method> methodEquals = methodEquals(method);
+        if (packageDefaultMethods.stream().noneMatch(methodEquals)) {
+            addInjectMethod(method, injectMethods);
+        }
+        packageDefaultMethods.add(method);
+    }
+
+    private static Predicate<Method> methodEquals(Method method) {
+        return packageDefaultMethod -> Members.methodsEqual(method, packageDefaultMethod);
     }
 
     private void addInjectMethod(Method method, List<Method> injectMethods) {
@@ -104,5 +112,4 @@ class MethodBuilder {
             injectMethods.add(method);
         }
     }
-
 }
