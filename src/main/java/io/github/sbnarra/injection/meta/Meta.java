@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.meta;
 
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.type.Type;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

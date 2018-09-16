@@ -1,9 +1,9 @@
 package io.github.sbnarra.injection;
 
 import io.github.sbnarra.injection.context.ContextException;
-import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
+import io.github.sbnarra.injection.type.Type;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;

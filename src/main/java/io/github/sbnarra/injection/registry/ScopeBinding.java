@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.registry;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.scope.ScopeHandler;
-import io.github.sbnarra.injection.core.Annotations;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

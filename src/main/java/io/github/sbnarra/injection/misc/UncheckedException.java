@@ -1,4 +1,4 @@
-package io.github.sbnarra.injection.core;
+package io.github.sbnarra.injection.misc;
 
 public class UncheckedException extends Exception {
 

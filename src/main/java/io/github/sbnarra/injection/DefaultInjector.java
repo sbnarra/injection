@@ -1,17 +1,17 @@
-package io.github.sbnarra.injection.core;
+package io.github.sbnarra.injection;
 
-import io.github.sbnarra.injection.InjectException;
-import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.context.DefaultProvider;
+import io.github.sbnarra.injection.type.Type;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 
-@RequiredArgsConstructor
-public class DefaultInjector implements Injector {
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+class DefaultInjector implements Injector {
 
     private final Context context;
 

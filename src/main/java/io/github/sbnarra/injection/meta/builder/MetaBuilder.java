@@ -1,9 +1,9 @@
 package io.github.sbnarra.injection.meta.builder;
 
 import io.github.sbnarra.injection.context.Context;
-import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.TypeBinding;
+import io.github.sbnarra.injection.type.Type;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

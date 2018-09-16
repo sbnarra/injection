@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.meta.builder;
 
-import io.github.sbnarra.injection.core.Annotations;
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.TypeBinding;
 
@@ -15,10 +15,10 @@ public class InjectBuilder {
 
     public <T> Meta.Inject build(AnnotatedElement annotatedElement, TypeBinding<T> binding) {
         Annotation qualifier = binding != null && binding.getQualifier() != null ?
-                binding.getQualifier() : Annotations.findQualifier(annotatedElement);
+                binding.getQualifier() : Annotations.findQualifierAnnotation(annotatedElement);
 
         Annotation scope = binding != null && binding.getContract() != null && binding.getContract().getScoped() != null ?
-                binding.getContract().getScoped() : Annotations.findScope(annotatedElement);
+                binding.getContract().getScoped() : Annotations.findScopeAnnotation(annotatedElement);
 
         return Meta.Inject.builder()
                 .qualifier(qualifier)

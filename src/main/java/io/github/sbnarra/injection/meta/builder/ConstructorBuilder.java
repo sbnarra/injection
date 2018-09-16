@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.meta.builder;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.Context;
-import io.github.sbnarra.injection.core.Annotations;
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ class ConstructorBuilder {
         if (buildClass != contractClass) {
             return typedConstructorLookup(buildClass, contractClass);
         } else {
-            List<Constructor<?>> constructors = Annotations.findInject(buildClass.getDeclaredConstructors());
+            List<Constructor<?>> constructors = Annotations.findAnnotatedElementsWithInjectAnnotation(buildClass.getDeclaredConstructors());
             if (constructors.size() == 0) {
                 return noArgConstructor(buildClass);
             } else if (constructors.size() > 1) {
@@ -44,7 +44,7 @@ class ConstructorBuilder {
 
     private <T> Constructor<? extends T> typedConstructorLookup(@NonNull Class<? extends T> buildClass, @NonNull Class<?> contractClass) throws BuilderException {
         Constructor<?>[] constructors = contractClass.getDeclaredConstructors();
-        List<Integer> injectIndexes = Annotations.findInjectIndexes(constructors);
+        List<Integer> injectIndexes = Annotations.findIndexesOfAnnotatedElementsWithInjectAnnotation(constructors);
         if (injectIndexes.size() == 0) {
             return noArgConstructor(buildClass);
         } else if (injectIndexes.size() > 1) {

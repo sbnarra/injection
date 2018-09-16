@@ -1,13 +1,13 @@
 package io.github.sbnarra.injection.meta.builder;
 
-import io.github.sbnarra.injection.Buildability;
 import io.github.sbnarra.injection.aspect.Aspect;
 import io.github.sbnarra.injection.aspect.AspectInvoker;
 import io.github.sbnarra.injection.aspect.Invoker;
-import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.meta.Meta;
+import io.github.sbnarra.injection.misc.Buildability;
 import io.github.sbnarra.injection.registry.TypeBinding;
 import io.github.sbnarra.injection.registry.TypeContract;
+import io.github.sbnarra.injection.type.Type;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;

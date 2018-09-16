@@ -16,7 +16,8 @@ public class ContextFactory {
         Graph graph = new Graph(new MetaBuilderFactory().newInstance());
 
         ScopedContext scopedContext = new ScopedContext(registry);
-        Context context = new DefaultContext(registry, graph, scopedContext);
+        ObjectBuilder objectBuilder = new DefaultObjectBuilder();
+        Context context = new DefaultContext(registry, graph, scopedContext, objectBuilder);
 
         Iterator<TypeBinding<?>> typeBindingIterator = new ArrayList<>(registry.getTypeBindings()).iterator();
         while (typeBindingIterator.hasNext()) {

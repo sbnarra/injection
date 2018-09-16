@@ -2,7 +2,7 @@ package io.github.sbnarra.injection.context;
 
 import io.github.sbnarra.injection.InjectException;
 import io.github.sbnarra.injection.Injector;
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.type.Type;
 import lombok.RequiredArgsConstructor;
 
 import javax.inject.Provider;

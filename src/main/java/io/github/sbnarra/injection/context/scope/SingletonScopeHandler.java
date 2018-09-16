@@ -23,7 +23,7 @@ public class SingletonScopeHandler implements ScopeHandler {
         }
 
         // constructor from context not the injector to avoid cyclic injection
-        T t = injector.context().construct(meta, injector);
+        T t = injector.context().objectBuilder().construct(meta, injector);
         singletons.put(meta, t);
         return t;
     }

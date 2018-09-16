@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection;
 
-import io.github.sbnarra.injection.core.UncheckedException;
+import io.github.sbnarra.injection.misc.UncheckedException;
 
 public class InjectException extends UncheckedException {
 

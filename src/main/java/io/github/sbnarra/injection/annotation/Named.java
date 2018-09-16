@@ -1,4 +1,4 @@
-package io.github.sbnarra.injection.core;
+package io.github.sbnarra.injection.annotation;
 
 import lombok.ToString;
 

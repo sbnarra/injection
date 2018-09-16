@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.meta.builder;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.Context;
-import io.github.sbnarra.injection.core.Annotations;
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.RequiredArgsConstructor;
 
@@ -98,7 +98,7 @@ class MethodBuilder {
     }
 
     private void addInjectMethod(Method method, List<Method> injectMethods) {
-        if (Annotations.shouldInject(method)) {
+        if (Annotations.hasInjectAnnotation(method)) {
             method.setAccessible(true);
             injectMethods.add(method);
         }

@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.registry;
 
 import io.github.sbnarra.injection.ThreadLocal;
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.type.Type;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

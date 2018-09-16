@@ -1,10 +1,10 @@
 package io.github.sbnarra.injection;
 
+import io.github.sbnarra.injection.annotation.Named;
+import io.github.sbnarra.injection.annotation.SimpleAnnotation;
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
-import io.github.sbnarra.injection.core.Named;
-import io.github.sbnarra.injection.core.SimpleAnnotation;
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.type.Type;
 
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;

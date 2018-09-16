@@ -2,8 +2,8 @@ package io.github.sbnarra.injection.context;
 
 import io.github.sbnarra.injection.InjectException;
 import io.github.sbnarra.injection.Injector;
-import io.github.sbnarra.injection.core.Annotations;
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.annotation.Annotations;
+import io.github.sbnarra.injection.type.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -80,10 +80,10 @@ public class StaticContext {
 
     private static void injectStaticFields(Class<?> theClass, Injector injector) throws ContextException {
         for (Field field : theClass.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) && Annotations.shouldInject(field)) {
+            if (Modifier.isStatic(field.getModifiers()) && Annotations.hasInjectAnnotation(field)) {
                 field.setAccessible(true);
-                Annotation qualifier = Annotations.findQualifier(field);
-                Annotation scope = Annotations.findScope(field);
+                Annotation qualifier = Annotations.findQualifierAnnotation(field);
+                Annotation scope = Annotations.findScopeAnnotation(field);
 
                 try {
                     Type type = new Type<Object>(field.getGenericType()) {};
@@ -98,7 +98,7 @@ public class StaticContext {
 
     private static void injectStaticsMethods(Class<?> theClass, Injector injector) throws ContextException {
         for (Method method : theClass.getDeclaredMethods()) {
-            if (Modifier.isStatic(method.getModifiers()) && Annotations.shouldInject(method)) {
+            if (Modifier.isStatic(method.getModifiers()) && Annotations.hasInjectAnnotation(method)) {
                 method.setAccessible(true);
 
                 try {

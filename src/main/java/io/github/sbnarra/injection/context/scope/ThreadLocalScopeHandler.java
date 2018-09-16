@@ -33,7 +33,7 @@ public class ThreadLocalScopeHandler implements ScopeHandler {
     }
 
     private <T> T storeConstructed(Map<Meta<?>, Object> map, Meta<T> meta, Injector injector) throws ContextException {
-        T constructed = injector.context().construct(meta, injector);
+        T constructed = injector.context().objectBuilder().construct(meta, injector);
         map.put(meta, constructed);
         return constructed;
     }

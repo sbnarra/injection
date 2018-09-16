@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.meta.builder;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.Context;
-import io.github.sbnarra.injection.core.Annotations;
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.RequiredArgsConstructor;
 
@@ -34,8 +34,8 @@ class FieldBuilder {
             field.setAccessible(true);
         }
 
-        Annotation qualifier = Annotations.findQualifier(field);
-        Annotation scope = Annotations.findScope(field);
+        Annotation qualifier = Annotations.findQualifierAnnotation(field);
+        Annotation scope = Annotations.findScopeAnnotation(field);
 
         Meta.Parameter parameter = parametersMetaBuilder.buildParameter(field, field.getGenericType(), qualifier, scope, context, staticsMembers);
         return Meta.Field.builder()

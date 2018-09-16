@@ -4,7 +4,6 @@ import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.context.ContextFactory;
 import io.github.sbnarra.injection.context.StaticContext;
-import io.github.sbnarra.injection.core.DefaultInjector;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.RegistryException;

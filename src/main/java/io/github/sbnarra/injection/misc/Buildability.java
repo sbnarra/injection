@@ -1,6 +1,6 @@
-package io.github.sbnarra.injection;
+package io.github.sbnarra.injection.misc;
 
-import io.github.sbnarra.injection.core.Type;
+import io.github.sbnarra.injection.type.Type;
 
 import java.lang.reflect.Modifier;
 
