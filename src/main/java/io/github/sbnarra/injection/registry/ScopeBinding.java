@@ -14,9 +14,11 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 public class ScopeBinding extends Binding<ScopeContract, ScopeBinding, ScopeBinding> {
     private final Class<?> scoped;
+    private final Annotations annotations;
 
-    public ScopeBinding(Class<?> scoped, Collection<ScopeBinding> registryBindings) {
+    public ScopeBinding(Annotations annotations, Class<?> scoped, Collection<ScopeBinding> registryBindings) {
         super(registryBindings);
+        this.annotations = annotations;
         this.scoped = scoped;
     }
 
@@ -30,7 +32,7 @@ public class ScopeBinding extends Binding<ScopeContract, ScopeBinding, ScopeBind
             throw new RegistryException(scoped + ": not an annotation: use annotations for scopes");
         }
 
-        if (!Annotations.hasScopeAnnotation(scoped)) {
+        if (!annotations.hasScopeAnnotation(scoped)) {
             throw new RegistryException(scoped + ": not annotated with " + Scope.class);
         }
         registryBindings.add(this);

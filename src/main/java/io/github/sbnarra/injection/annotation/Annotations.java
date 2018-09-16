@@ -11,34 +11,46 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.Collections.singletonList;
+
 public class Annotations {
-    private static final Predicate<? super Annotation> isInjectAnnotation = annotation -> annotation.annotationType().equals(Inject.class);
-    private static final Predicate<? super AnnotatedElement> hasDeclaredInjectAnnotation = checkDeclaredAnnotations(isInjectAnnotation);
+    private final Predicate<? super AnnotatedElement> hasDeclaredInjectAnnotation;
+    private final Predicate<? super AnnotatedElement> hasDeclaredScopeAnnotation;
+    private final Predicate<? super Annotation> annotationAnnotatedWithScope;
+    private final Predicate<? super Annotation> annotationAnnotatedWithQualifier;
 
-    private static final Predicate<? super Annotation> isScopeAnnotation = annotation -> annotation.annotationType().equals(Scope.class);
-    private static final Predicate<? super AnnotatedElement> hasDeclaredScopeAnnotation = checkDeclaredAnnotations(isScopeAnnotation);
-    private static final Predicate<? super Annotation> annotationAnnotatedWithScope = testAnnotation(hasDeclaredScopeAnnotation);
+    public Annotations(Class<?> injectClass, Class<?> scopeClass, Class<?> qualifierClass) {
+        this(singletonList(injectClass), singletonList(scopeClass), singletonList(qualifierClass));
+    }
 
-    private static final Predicate<? super Annotation> isQualifierAnnotation = annotation -> annotation.annotationType().equals(Qualifier.class);
-    private static final Predicate<? super AnnotatedElement> hasDeclaredQualifierAnnotation = checkDeclaredAnnotations(isQualifierAnnotation);
-    private static final Predicate<? super Annotation> annotationAnnotatedWithQualifier = testAnnotation(hasDeclaredQualifierAnnotation);
+    public Annotations(List<Class<?>> injectClass, List<Class<?>> scopeClass, List<Class<?>> qualifierClass) {
+        this(isClass(injectClass), isClass(scopeClass), isClass(qualifierClass));
+    }
 
-    private Annotations() {
+    private Annotations(Predicate<? super Annotation> isInject, Predicate<? super Annotation> isScope, Predicate<? super Annotation> isQualifier) {
+        this.hasDeclaredInjectAnnotation = checkDeclaredAnnotations(isInject);
+        this.hasDeclaredScopeAnnotation = checkDeclaredAnnotations(isScope);
+        this.annotationAnnotatedWithScope = testAnnotation(hasDeclaredScopeAnnotation);
+        this.annotationAnnotatedWithQualifier = testAnnotation(checkDeclaredAnnotations(isQualifier));
+    }
+
+    public static Annotations newDefault() {
+        return new Annotations(Inject.class, Scope.class, Qualifier.class);
     }
 
     /*
      * inject helper methods
      */
 
-    public static <T extends AnnotatedElement> boolean hasInjectAnnotation(T annotatedElement) {
+    public <T extends AnnotatedElement> boolean hasInjectAnnotation(T annotatedElement) {
         return hasDeclaredInjectAnnotation.test(annotatedElement);
     }
 
-    public static <T extends AnnotatedElement> List<T> findAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
+    public <T extends AnnotatedElement> List<T> findAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
         return Arrays.stream(annotatedElements).filter(hasDeclaredInjectAnnotation).collect(Collectors.toList());
     }
 
-    public static <T extends AnnotatedElement> List<Integer> findIndexesOfAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
+    public <T extends AnnotatedElement> List<Integer> findIndexesOfAnnotatedElementsWithInjectAnnotation(T[] annotatedElements) {
         return IntStream.range(0, annotatedElements.length).filter(i -> hasInjectAnnotation(annotatedElements[i])).boxed().collect(Collectors.toList());
     }
 
@@ -46,15 +58,15 @@ public class Annotations {
      * scope helper methods
      */
 
-    public static boolean hasScopeAnnotation(Class<?> theClass) {
+    public boolean hasScopeAnnotation(Class<?> theClass) {
         return hasDeclaredScopeAnnotation.test(theClass);
     }
 
-    public static Annotation findScopeAnnotation(Annotation[] annotations) {
+    public Annotation findScopeAnnotation(Annotation[] annotations) {
         return findFirstMatching(annotationAnnotatedWithScope, annotations);
     }
 
-    public static <T extends AnnotatedElement> Annotation findScopeAnnotation(T annotatedElement) {
+    public <T extends AnnotatedElement> Annotation findScopeAnnotation(T annotatedElement) {
         return findScopeAnnotation(annotatedElement.getDeclaredAnnotations());
     }
 
@@ -62,11 +74,11 @@ public class Annotations {
      * qualifier helper methods
      */
 
-    public static <T extends AnnotatedElement> Annotation findQualifierAnnotation(T annotatedElement) {
+    public <T extends AnnotatedElement> Annotation findQualifierAnnotation(T annotatedElement) {
         return findQualifierAnnotation(annotatedElement.getDeclaredAnnotations());
     }
 
-    public static Annotation findQualifierAnnotation(Annotation[] annotations) {
+    public Annotation findQualifierAnnotation(Annotation[] annotations) {
         return findFirstMatching(annotationAnnotatedWithQualifier, annotations);
     }
 
@@ -84,5 +96,14 @@ public class Annotations {
 
     private static Predicate<? super AnnotatedElement> checkDeclaredAnnotations(Predicate<? super Annotation> annotationCheck) {
         return annotatedElement -> Arrays.stream(annotatedElement.getDeclaredAnnotations()).anyMatch(annotationCheck);
+    }
+
+    private static Predicate<? super Annotation> isClass(List<Class<?>> theClasses) {
+        List<Predicate<? super Annotation>> isOneOfTheClasses = theClasses.stream().map(Annotations::isClass).collect(Collectors.toList());
+        return annotation -> isOneOfTheClasses.stream().anyMatch(isOneOfTheClass -> isOneOfTheClass.test(annotation));
+    }
+
+    private static Predicate<? super Annotation> isClass(Class<?> theClass) {
+        return annotation -> annotation.annotationType().equals(theClass);
     }
 }

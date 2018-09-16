@@ -1,7 +1,10 @@
 package io.github.sbnarra.injection.registry;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.type.Type;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.lang.annotation.Annotation;
@@ -9,16 +12,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @ToString
 public class Registry {
 
-    private final List<AspectBinding> interceptionBindings = new ArrayList<>();
-    private final Collection<TypeBinding<?>> typeBindings = new ArrayList<>();
-    private final List<ScopeBinding> scopeBindings = new ArrayList<>();
-
-    Registry() {
-    }
+    @Getter private final List<AspectBinding> interceptionBindings = new ArrayList<>();
+    @Getter private final Collection<TypeBinding<?>> typeBindings = new ArrayList<>();
+    @Getter private final List<ScopeBinding> scopeBindings = new ArrayList<>();
+    @ToString.Exclude private final Annotations annotations;
 
     public <T> TypeBinding<T> bind(Class<T> tClass) {
         return bind(new Type<T>(tClass) {});
@@ -29,7 +30,7 @@ public class Registry {
     }
 
     public ScopeBinding scoped(Class<?> scoped) {
-        return new ScopeBinding(scoped, scopeBindings);
+        return new ScopeBinding(annotations, scoped, scopeBindings);
     }
 
     public AspectBinding intercept(Class<?> annotationClass) {

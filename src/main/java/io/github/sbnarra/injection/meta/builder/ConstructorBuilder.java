@@ -13,6 +13,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 class ConstructorBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
+    private final Annotations annotations;
 
     <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         Constructor<? extends T> constructor = find(classMeta);
@@ -32,7 +33,7 @@ class ConstructorBuilder {
         if (buildClass != contractClass) {
             return typedConstructorLookup(buildClass, contractClass);
         } else {
-            List<Constructor<?>> constructors = Annotations.findAnnotatedElementsWithInjectAnnotation(buildClass.getDeclaredConstructors());
+            List<Constructor<?>> constructors = annotations.findAnnotatedElementsWithInjectAnnotation(buildClass.getDeclaredConstructors());
             if (constructors.size() == 0) {
                 return noArgConstructor(buildClass);
             } else if (constructors.size() > 1) {
@@ -44,7 +45,7 @@ class ConstructorBuilder {
 
     private <T> Constructor<? extends T> typedConstructorLookup(@NonNull Class<? extends T> buildClass, @NonNull Class<?> contractClass) throws BuilderException {
         Constructor<?>[] constructors = contractClass.getDeclaredConstructors();
-        List<Integer> injectIndexes = Annotations.findIndexesOfAnnotatedElementsWithInjectAnnotation(constructors);
+        List<Integer> injectIndexes = annotations.findIndexesOfAnnotatedElementsWithInjectAnnotation(constructors);
         if (injectIndexes.size() == 0) {
             return noArgConstructor(buildClass);
         } else if (injectIndexes.size() > 1) {

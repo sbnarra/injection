@@ -1,5 +1,6 @@
 package io.github.sbnarra.injection.context;
 
+import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.context.graph.Graph;
 import io.github.sbnarra.injection.context.graph.GraphException;
 import io.github.sbnarra.injection.meta.builder.MetaBuilderFactory;
@@ -12,8 +13,8 @@ import java.util.Set;
 
 public class ContextFactory {
 
-    public Context create(Registry registry, Set<Class<?>> staticsMembers) throws ContextException {
-        Graph graph = new Graph(new MetaBuilderFactory().newInstance());
+    public Context create(Registry registry, Set<Class<?>> staticsMembers, Annotations annotations) throws ContextException {
+        Graph graph = new Graph(new MetaBuilderFactory().newInstance(annotations));
 
         ScopedContext scopedContext = new ScopedContext(registry);
         ObjectBuilder objectBuilder = new DefaultObjectBuilder();

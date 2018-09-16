@@ -15,6 +15,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 class FieldBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
+    private final Annotations annotations;
 
     void build(Class<?> theClass, Context context, List<Meta.Field> fields, Set<Class<?>> staticsMembers) throws BuilderException {
         for (Field field : theClass.getDeclaredFields()) {
@@ -34,8 +35,8 @@ class FieldBuilder {
             field.setAccessible(true);
         }
 
-        Annotation qualifier = Annotations.findQualifierAnnotation(field);
-        Annotation scope = Annotations.findScopeAnnotation(field);
+        Annotation qualifier = annotations.findQualifierAnnotation(field);
+        Annotation scope = annotations.findScopeAnnotation(field);
 
         Meta.Parameter parameter = parametersMetaBuilder.buildParameter(field, field.getGenericType(), qualifier, scope, context, staticsMembers);
         return Meta.Field.builder()

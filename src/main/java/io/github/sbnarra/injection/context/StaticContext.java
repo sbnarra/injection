@@ -4,6 +4,7 @@ import io.github.sbnarra.injection.InjectException;
 import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.annotation.Annotations;
 import io.github.sbnarra.injection.type.Type;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -17,11 +18,14 @@ import java.util.Set;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
+@RequiredArgsConstructor
 public class StaticContext {
 
     private final static Set<Class<?>> injectedStaticClasses = new HashSet<>();
 
-    public static void inject(Set<Class<?>> allStaticClasses, Injector injector) throws ContextException {
+    private final Annotations annotations;
+
+    public void inject(Set<Class<?>> allStaticClasses, Injector injector) throws ContextException {
         Set<Class<?>> newInjectedStaticClasses = cleanSupertypes(allStaticClasses);
         try {
             Set<Class<?>> injectedClasses = new HashSet<>();
@@ -64,7 +68,7 @@ public class StaticContext {
         return newInjectedStaticClasses;
     }
 
-    private static void injectStatics(Class<?> theClass, Injector injector, Set<Class<?>> injectedClasses) throws ContextException {
+    private void injectStatics(Class<?> theClass, Injector injector, Set<Class<?>> injectedClasses) throws ContextException {
         if (!Object.class.equals(theClass.getSuperclass())) {
             injectStatics(theClass.getSuperclass(), injector, injectedClasses);
         }
@@ -78,12 +82,12 @@ public class StaticContext {
         injectedClasses.add(theClass);
     }
 
-    private static void injectStaticFields(Class<?> theClass, Injector injector) throws ContextException {
+    private void injectStaticFields(Class<?> theClass, Injector injector) throws ContextException {
         for (Field field : theClass.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) && Annotations.hasInjectAnnotation(field)) {
+            if (Modifier.isStatic(field.getModifiers()) && annotations.hasInjectAnnotation(field)) {
                 field.setAccessible(true);
-                Annotation qualifier = Annotations.findQualifierAnnotation(field);
-                Annotation scope = Annotations.findScopeAnnotation(field);
+                Annotation qualifier = annotations.findQualifierAnnotation(field);
+                Annotation scope = annotations.findScopeAnnotation(field);
 
                 try {
                     Type type = new Type<Object>(field.getGenericType()) {};
@@ -96,9 +100,9 @@ public class StaticContext {
         }
     }
 
-    private static void injectStaticsMethods(Class<?> theClass, Injector injector) throws ContextException {
+    private void injectStaticsMethods(Class<?> theClass, Injector injector) throws ContextException {
         for (Method method : theClass.getDeclaredMethods()) {
-            if (Modifier.isStatic(method.getModifiers()) && Annotations.hasInjectAnnotation(method)) {
+            if (Modifier.isStatic(method.getModifiers()) && annotations.hasInjectAnnotation(method)) {
                 method.setAccessible(true);
 
                 try {
@@ -110,7 +114,7 @@ public class StaticContext {
         }
     }
 
-    private static Object[] getParameters(Method method, Injector injector) throws ContextException {
+    private Object[] getParameters(Method method, Injector injector) throws ContextException {
         Annotation[][] parametersAnnotations = method.getParameterAnnotations();
         java.lang.reflect.Type[] parameterTypes = method.getGenericParameterTypes();
         Object[] args = new Object[parameterTypes.length];
@@ -118,12 +122,12 @@ public class StaticContext {
         return args;
     }
 
-    private static IntConsumer getParameter(Object[] args, Method method, Injector injector, Annotation[][] parametersAnnotations, java.lang.reflect.Type[] parameterTypes) throws ContextException {
+    private IntConsumer getParameter(Object[] args, Method method, Injector injector, Annotation[][] parametersAnnotations, java.lang.reflect.Type[] parameterTypes) throws ContextException {
         try {
         return i -> {
             Annotation[] parameterAnnotations = parametersAnnotations[i];
-            Annotation qualifier = Annotations.findQualifierAnnotation(parameterAnnotations);
-            Annotation scope = Annotations.findScopeAnnotation(parameterAnnotations);
+            Annotation qualifier = annotations.findQualifierAnnotation(parameterAnnotations);
+            Annotation scope = annotations.findScopeAnnotation(parameterAnnotations);
 
             try {
                 Type<?> type = new Type<Object>(parameterTypes[i]) {};

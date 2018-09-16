@@ -14,12 +14,14 @@ import org.atinject.tck.auto.Seat;
 import org.atinject.tck.auto.Tire;
 import org.atinject.tck.auto.V8Engine;
 import org.atinject.tck.auto.accessories.SpareTire;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PerformanceTest {
 
     private static final int count = 200;
 
+    @Disabled
     @Test
     public void injectorTest() throws InjectException {
         for (int i = 0; i < count; i++) {
@@ -36,6 +38,7 @@ public class PerformanceTest {
         }
     }
 
+    @Disabled
     @Test
     public void guiceInjectorTest() {
         for (int i = 0; i < count; i++) {

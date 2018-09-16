@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 class MethodBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
+    private final Annotations annotations;
 
     void build(Class<?> theClass, Context context, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods,
                             List<Meta.Method> methodMetas, Set<Class<?>> staticsMembers) throws BuilderException {
@@ -98,7 +99,7 @@ class MethodBuilder {
     }
 
     private void addInjectMethod(Method method, List<Method> injectMethods) {
-        if (Annotations.hasInjectAnnotation(method)) {
+        if (annotations.hasInjectAnnotation(method)) {
             method.setAccessible(true);
             injectMethods.add(method);
         }

@@ -21,6 +21,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 class ParametersMetaBuilder {
     private final InjectBuilder injectBuilder;
+    private final Annotations annotations;
 
     List<Meta.Parameter> buildParameters(Executable executable, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         List<Meta.Parameter> metas = new ArrayList<>();
@@ -29,8 +30,8 @@ class ParametersMetaBuilder {
         for (int i = 0; i < executable.getParameterCount(); i++) {
             Parameter type = parameters[i];
 
-            Annotation qualifier = Annotations.findQualifierAnnotation(type);
-            Annotation scope = Annotations.findScopeAnnotation(type);
+            Annotation qualifier = annotations.findQualifierAnnotation(type);
+            Annotation scope = annotations.findScopeAnnotation(type);
             metas.add(buildParameter(type, type.getParameterizedType(), qualifier, scope, context, staticsMembers));
         }
 
