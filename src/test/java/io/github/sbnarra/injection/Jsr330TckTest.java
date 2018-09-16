@@ -13,8 +13,15 @@ import org.atinject.tck.auto.Seat;
 import org.atinject.tck.auto.Tire;
 import org.atinject.tck.auto.V8Engine;
 import org.atinject.tck.auto.accessories.SpareTire;
+import org.junit.runner.JUnitCore;
 
 public class Jsr330TckTest {
+
+    @org.junit.jupiter.api.Test
+    public void jsr330TckTest() throws InjectException {
+        JUnitCore jUnitCore = new JUnitCore();
+        jUnitCore.run(suite());
+    }
 
     public static Test suite() throws InjectException {
         return Tck.testsFor(car(), true, true);
