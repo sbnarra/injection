@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.meta.builder;
 
-import io.github.sbnarra.injection.Helper;
+import io.github.sbnarra.injection.Buildability;
 import io.github.sbnarra.injection.aspect.Aspect;
 import io.github.sbnarra.injection.aspect.AspectInvoker;
 import io.github.sbnarra.injection.aspect.Invoker;
@@ -42,8 +42,8 @@ class ClassBuilder {
         TypeContract<T> contract = typeBinding.getContract();
         Type<? extends T> type = contract.getType();
         try {
-            Helper.checkBuildability(type);
-        } catch (Helper.HelperException e) {
+            Buildability.check(type);
+        } catch (Buildability.Exception e) {
             throw new BuilderException(e.getMessage());
         }
 

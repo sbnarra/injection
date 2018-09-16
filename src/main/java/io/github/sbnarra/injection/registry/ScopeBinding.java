@@ -1,13 +1,13 @@
 package io.github.sbnarra.injection.registry;
 
-import io.github.sbnarra.injection.scope.ScopeHandler;
+import io.github.sbnarra.injection.context.scope.ScopeHandler;
+import io.github.sbnarra.injection.core.Annotations;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 import javax.inject.Scope;
 import java.util.Collection;
-import java.util.stream.Stream;
 
 @ToString(callSuper = true)
 @Getter
@@ -30,7 +30,7 @@ public class ScopeBinding extends Binding<ScopeContract, ScopeBinding, ScopeBind
             throw new RegistryException(scoped + ": not an annotation: use annotations for scopes");
         }
 
-        if (!Stream.of(scoped.getAnnotations()).anyMatch(a -> Scope.class.isInstance(a))) {
+        if (!Annotations.hasScopeAnnotation(scoped)) {
             throw new RegistryException(scoped + ": not annotated with " + Scope.class);
         }
         registryBindings.add(this);

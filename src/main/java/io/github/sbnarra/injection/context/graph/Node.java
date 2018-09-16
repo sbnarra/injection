@@ -1,4 +1,4 @@
-package io.github.sbnarra.injection.graph;
+package io.github.sbnarra.injection.context.graph;
 
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.Value;

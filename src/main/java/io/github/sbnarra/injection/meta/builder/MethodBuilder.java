@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class MethodBuilder {
@@ -23,7 +23,7 @@ class MethodBuilder {
         try {
             gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().forEach(buildMeta(theClass, context, methodMetas, staticsMembers));
         } catch (BuilderException.Unchecked e) {
-            throw e.builderException();
+            throw e.checked(BuilderException.class);
         }
     }
 
@@ -54,7 +54,7 @@ class MethodBuilder {
 
     private List<Method> gatherMethods(Class<?> theClass, List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
         Package classPackage = theClass.getPackage();
-        Stream.of(theClass.getDeclaredMethods()).forEach(gatherMethod(classPackage, injectMethods, publicProtectedMethods, defaultMethods));
+        Arrays.stream(theClass.getDeclaredMethods()).forEach(gatherMethod(classPackage, injectMethods, publicProtectedMethods, defaultMethods));
         return injectMethods;
     }
 

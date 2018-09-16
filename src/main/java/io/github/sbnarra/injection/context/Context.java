@@ -1,8 +1,8 @@
 package io.github.sbnarra.injection.context;
 
 import io.github.sbnarra.injection.Injector;
+import io.github.sbnarra.injection.context.graph.Node;
 import io.github.sbnarra.injection.core.Type;
-import io.github.sbnarra.injection.graph.Node;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.Registry;
 import lombok.NonNull;

@@ -1,11 +1,10 @@
 package io.github.sbnarra.injection.context;
 
-import io.github.sbnarra.injection.Helper;
+import io.github.sbnarra.injection.Buildability;
 import io.github.sbnarra.injection.Injector;
+import io.github.sbnarra.injection.context.graph.Graph;
+import io.github.sbnarra.injection.context.graph.Node;
 import io.github.sbnarra.injection.core.Type;
-import io.github.sbnarra.injection.graph.Graph;
-import io.github.sbnarra.injection.graph.GraphException;
-import io.github.sbnarra.injection.graph.Node;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.RegistryException;
@@ -55,33 +54,26 @@ class DefaultContext implements Context {
 
     @Override
     public <T> Node<?> lookup(Type<T> theType, Annotation qualifier, Annotation scope, Set<Class<?>> staticsMembers) throws ContextException {
-        try {
-            Node<?> node = graph.find(theType,  qualifier);
-            if (node != null) {
-                return node;
-            }
-        } catch (GraphException e) {
-            throw new ContextException("error looking up type: " + theType + ": qualifier: " + qualifier);
+        Node<?> node = graph.find(theType,  qualifier);
+        if (node != null) {
+            return node;
         }
 
-        try {
-            if (qualifier == null) {
-                try {
-                    Helper.checkBuildability(theType);
-                } catch (Helper.HelperException e) {
-                    throw new ContextException(e.getMessage());
-                }
-                return graph.addNode(selfBinding(theType), this, staticsMembers);
+        TypeBinding<?> newBinding;
+        if (qualifier == null) {
+            try {
+                Buildability.check(theType);
+            } catch (Buildability.Exception e) {
+                throw new ContextException(e.getMessage());
             }
-
-            TypeBinding<?> typeBinding = registry.find(theType, qualifier);
-            if (typeBinding == null) {
+            newBinding = selfBinding(theType);
+        } else {
+            newBinding = registry.find(theType, qualifier);
+            if (newBinding == null) {
                 throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
             }
-            return graph.addNode(typeBinding, this, staticsMembers);
-        } catch (GraphException e) {
-            throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
         }
+        return graph.addNode(newBinding, this, staticsMembers);
     }
 
     private <T> TypeBinding<T> selfBinding(Type<T> theType) throws ContextException {
@@ -128,7 +120,7 @@ class DefaultContext implements Context {
                 }
             });
         } catch (ContextException.Unchecked e) {
-            throw e.contextException();
+            throw e.checked(ContextException.class);
         }
     }
 
@@ -171,7 +163,7 @@ class DefaultContext implements Context {
         for (int i = 0; i < argMetas.size(); i++) {
             Meta.Parameter paramMeta = argMetas.get(i);
             if (Meta.ProviderParameter.class.isInstance(paramMeta)) {
-                Meta.ProviderParameter providerParameter = Meta.ProviderParameter.class.cast(paramMeta);
+                Meta.ProviderParameter<?> providerParameter = Meta.ProviderParameter.class.cast(paramMeta);
                 args[i] = getDefaultProvider(providerParameter, injector);
             } else {
                 Meta.InstanceParameter instanceParameter = Meta.InstanceParameter.class.cast(paramMeta);

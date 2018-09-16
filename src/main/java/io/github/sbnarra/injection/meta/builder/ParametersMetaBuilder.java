@@ -2,11 +2,10 @@ package io.github.sbnarra.injection.meta.builder;
 
 import io.github.sbnarra.injection.context.Context;
 import io.github.sbnarra.injection.context.ContextException;
+import io.github.sbnarra.injection.context.graph.Node;
 import io.github.sbnarra.injection.core.Annotations;
-import io.github.sbnarra.injection.core.AnnotationsException;
 import io.github.sbnarra.injection.core.Parameterized;
 import io.github.sbnarra.injection.core.Type;
-import io.github.sbnarra.injection.graph.Node;
 import io.github.sbnarra.injection.meta.Meta;
 import lombok.RequiredArgsConstructor;
 
@@ -30,13 +29,8 @@ class ParametersMetaBuilder {
         for (int i = 0; i < executable.getParameterCount(); i++) {
             Parameter type = parameters[i];
 
-            Annotation qualifier, scope;
-            try {
-                qualifier = Annotations.findQualifier(type);
-                scope = Annotations.findScope(type);
-            } catch (AnnotationsException e) {
-                throw new BuilderException("error finding qualifier", e);
-            }
+            Annotation qualifier = Annotations.findQualifier(type);
+            Annotation scope = Annotations.findScope(type);
             metas.add(buildParameter(type, type.getParameterizedType(), qualifier, scope, context, staticsMembers));
         }
 

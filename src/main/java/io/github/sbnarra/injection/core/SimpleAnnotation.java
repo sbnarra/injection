@@ -16,6 +16,11 @@ public class SimpleAnnotation implements Annotation {
     }
 
     @Override
+    public int hashCode() {
+        return annotationType().hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (Annotation.class.isInstance(obj)) {
             Annotation annotation = Annotation.class.cast(obj);

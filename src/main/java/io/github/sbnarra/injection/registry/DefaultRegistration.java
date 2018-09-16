@@ -1,8 +1,8 @@
 package io.github.sbnarra.injection.registry;
 
 import io.github.sbnarra.injection.ThreadLocal;
-import io.github.sbnarra.injection.scope.SingletonScopeHandler;
-import io.github.sbnarra.injection.scope.ThreadLocalScopeHandler;
+import io.github.sbnarra.injection.context.scope.SingletonScopeHandler;
+import io.github.sbnarra.injection.context.scope.ThreadLocalScopeHandler;
 
 import javax.inject.Singleton;
 

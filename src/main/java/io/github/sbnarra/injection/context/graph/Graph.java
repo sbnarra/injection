@@ -1,6 +1,7 @@
-package io.github.sbnarra.injection.graph;
+package io.github.sbnarra.injection.context.graph;
 
 import io.github.sbnarra.injection.context.Context;
+import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.meta.builder.BuilderException;
@@ -20,7 +21,7 @@ public class Graph {
     private final Set<Node<?>> rootNodes = new HashSet<>();
     private final MetaBuilder metaBuilder;
 
-    public Node<?> addNode(TypeBinding<?> typeBinding, Context context, Set<Class<?>> staticsMembers) throws GraphException {
+    public Node<?> addNode(TypeBinding<?> typeBinding, Context context, Set<Class<?>> staticsMembers) throws ContextException {
         Node<?> node = find(typeBinding.getType(), typeBinding.getQualifier());
         if (node != null) {
             return node;
@@ -37,11 +38,11 @@ public class Graph {
         return node;
     }
 
-    public <T> Node<?> find(Type<T> type, Annotation annotation) throws GraphException {
+    public <T> Node<?> find(Type<T> type, Annotation annotation) throws ContextException {
         return find(type.getTheClass(), annotation, rootNodes);
     }
 
-    private Node<?> find(java.lang.reflect.Type type, Annotation qualifier, Set<Node<?>> nodes) throws GraphException {
+    private Node<?> find(java.lang.reflect.Type type, Annotation qualifier, Set<Node<?>> nodes) throws ContextException {
         for (Node<?> node : nodes) {
             Meta<?> meta = node.getMeta();
             Meta.Class<?> clazz = meta.getClazz();
@@ -54,9 +55,9 @@ public class Graph {
 
             if (meta.getInstance() != null) {
                 Object instance = meta.getInstance();
-                if (Class.class.isAssignableFrom(type.getClass())) {
-                    Class<?> typeClass = Class.class.cast(type);
-                    if (typeClass.isAssignableFrom(instance.getClass())) {
+                if (Class.class.isInstance(type)) {
+                    Class<?> theClass = Class.class.cast(type);
+                    if (theClass.isAssignableFrom(instance.getClass())) {
                         return node;
                     } else {
                         continue;

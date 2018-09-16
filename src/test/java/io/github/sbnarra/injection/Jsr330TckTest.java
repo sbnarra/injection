@@ -15,6 +15,7 @@ import org.atinject.tck.auto.V8Engine;
 import org.atinject.tck.auto.accessories.SpareTire;
 
 public class Jsr330TckTest {
+
     public static Test suite() throws InjectException {
         return Tck.testsFor(car(), true, true);
     }

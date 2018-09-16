@@ -3,11 +3,8 @@ package io.github.sbnarra.injection.context;
 import io.github.sbnarra.injection.InjectException;
 import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.core.Annotations;
-import io.github.sbnarra.injection.core.AnnotationsException;
 import io.github.sbnarra.injection.core.Type;
 
-import javax.inject.Qualifier;
-import javax.inject.Scope;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -16,12 +13,9 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.IntConsumer;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class StaticContext {
 
@@ -42,7 +36,7 @@ public class StaticContext {
                 }
             });
         } catch (ContextException.Unchecked e) {
-            throw e.contextException();
+            throw e.checked(ContextException.class);
         }
     }
 
@@ -88,13 +82,8 @@ public class StaticContext {
         for (Field field : theClass.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers()) && Annotations.shouldInject(field)) {
                 field.setAccessible(true);
-                Annotation qualifier, scope;
-                try {
-                    qualifier = Annotations.findQualifier(field);
-                    scope = Annotations.findScope(field);
-                } catch (AnnotationsException e) {
-                    throw new ContextException("annotations error: " + field, e);
-                }
+                Annotation qualifier = Annotations.findQualifier(field);
+                Annotation scope = Annotations.findScope(field);
 
                 try {
                     Type type = new Type<Object>(field.getGenericType()) {};
@@ -106,7 +95,6 @@ public class StaticContext {
             }
         }
     }
-
 
     private static void injectStaticsMethods(Class<?> theClass, Injector injector) throws ContextException {
         for (Method method : theClass.getDeclaredMethods()) {
@@ -134,8 +122,8 @@ public class StaticContext {
         try {
         return i -> {
             Annotation[] parameterAnnotations = parametersAnnotations[i];
-            Annotation qualifier = findAnnotatedAnnotation(parameterAnnotations, Qualifier.class);
-            Annotation scope = findAnnotatedAnnotation(parameterAnnotations, Scope.class);
+            Annotation qualifier = Annotations.findQualifierAnnotation(parameterAnnotations);
+            Annotation scope = Annotations.findScopeAnnotation(parameterAnnotations);
 
             try {
                 Type<?> type = new Type<Object>(parameterTypes[i]) {};
@@ -144,21 +132,8 @@ public class StaticContext {
                 throw e.unchecked();
             }};
         } catch (InjectException.Unchecked e) {
-            throw new ContextException("static method inject error: " + method + ":" + Arrays.toString(parameterTypes), e.injectException());
+            throw new ContextException("static method inject error: " + method + ":" + Arrays.toString(parameterTypes), e.checked(InjectException.class));
         }
-    }
-
-    private static Annotation findAnnotatedAnnotation(Annotation[] annotations, Class<?> annotationClass) {
-        Optional<Annotation> optional = Stream.of(annotations).filter(isAnnotatedWith(annotationClass)).findFirst();
-        return optional.isPresent() ? optional.get() : null;
-    }
-
-    private static Predicate<? super Annotation> isAnnotatedWith(Class<?> annotationClass) {
-        return annotation -> Stream.of(annotation.annotationType().getDeclaredAnnotations()).anyMatch(isAnnotation(annotationClass));
-    }
-
-    private static Predicate<? super Annotation> isAnnotation(Class<?> annotationClass) {
-        return annotation -> annotation.annotationType().equals(annotationClass);
     }
 
 }

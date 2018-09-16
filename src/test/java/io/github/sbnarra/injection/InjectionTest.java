@@ -1,9 +1,9 @@
 package io.github.sbnarra.injection;
 
+import io.github.sbnarra.injection.context.ContextException;
 import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
-import io.github.sbnarra.injection.scope.ScopeHandlerException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
@@ -99,7 +99,7 @@ public class InjectionTest {
     }
 
     @Test
-    public void namedBindingTest() throws InjectException, ScopeHandlerException {
+    public void namedBindingTest() throws InjectException {
         String defaultString = "defaultString";
         String bindingName = "named";
         String namedString = "namedString";
@@ -147,7 +147,7 @@ public class InjectionTest {
     }
 
     @Test
-    public void singletonScopeTest() throws InjectException, ScopeHandlerException {
+    public void singletonScopeTest() throws InjectException, ContextException {
         Injector injector = InjectorFactory.create(new Registration() {
             @Override
             public void register() throws RegistryException {

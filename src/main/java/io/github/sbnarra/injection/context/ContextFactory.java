@@ -1,7 +1,7 @@
 package io.github.sbnarra.injection.context;
 
-import io.github.sbnarra.injection.graph.Graph;
-import io.github.sbnarra.injection.graph.GraphException;
+import io.github.sbnarra.injection.context.graph.Graph;
+import io.github.sbnarra.injection.context.graph.GraphException;
 import io.github.sbnarra.injection.meta.builder.MetaBuilderFactory;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.TypeBinding;

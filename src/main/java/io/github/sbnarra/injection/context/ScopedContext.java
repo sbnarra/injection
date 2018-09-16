@@ -1,12 +1,11 @@
 package io.github.sbnarra.injection.context;
 
 import io.github.sbnarra.injection.Injector;
+import io.github.sbnarra.injection.context.scope.ScopeHandler;
 import io.github.sbnarra.injection.meta.Meta;
 import io.github.sbnarra.injection.registry.Registry;
 import io.github.sbnarra.injection.registry.ScopeBinding;
 import io.github.sbnarra.injection.registry.ScopeContract;
-import io.github.sbnarra.injection.scope.ScopeHandler;
-import io.github.sbnarra.injection.scope.ScopeHandlerException;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
@@ -30,11 +29,7 @@ public class ScopedContext {
     }
 
     public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ContextException {
-        try {
-            return getScopeHandler(meta, inject).get(meta, inject, injector);
-        } catch (ScopeHandlerException e) {
-            throw new ContextException("error getting instance using scope handler", e);
-        }
+        return getScopeHandler(meta, inject).get(meta, inject, injector);
     }
 
     private <T> ScopeHandler getScopeHandler(Meta<T> meta, Meta.Inject inject) throws ContextException {
@@ -54,10 +49,10 @@ public class ScopedContext {
         return scopes.get(matching.get(0));
     }
 
-    public void destoryScope(Class<?> scopeClass) throws ScopeHandlerException {
+    public void destoryScope(Class<?> scopeClass) throws ContextException {
         ScopeHandler scopeHandler = scopes.get(scopeClass);
         if (scopeHandler == null) {
-            throw new ScopeHandlerException("no scope handler for: " + scopeClass);
+            throw new ContextException("no scope handler for: " + scopeClass);
         }
         scopeHandler.destoryScope();
     }

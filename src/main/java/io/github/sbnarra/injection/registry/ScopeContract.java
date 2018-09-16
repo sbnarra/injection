@@ -1,6 +1,6 @@
 package io.github.sbnarra.injection.registry;
 
-import io.github.sbnarra.injection.scope.ScopeHandler;
+import io.github.sbnarra.injection.context.scope.ScopeHandler;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

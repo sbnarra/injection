@@ -1,4 +1,4 @@
-package io.github.sbnarra.injection.scope;
+package io.github.sbnarra.injection.context.scope;
 
 import io.github.sbnarra.injection.Injector;
 import io.github.sbnarra.injection.context.ContextException;
@@ -11,25 +11,19 @@ public class SingletonScopeHandler implements ScopeHandler {
     private final Map<Meta, Object> singletons = new ConcurrentHashMap<>();
 
     @Override
-    public void destoryScope() throws ScopeHandlerException {
+    public void destoryScope() {
         singletons.clear();
     }
 
     @Override
-    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ScopeHandlerException {
+    public <T> T get(Meta<T> meta, Meta.Inject inject, Injector injector) throws ContextException {
         Object singleton = singletons.get(meta);
         if (singleton != null) {
             return meta.getClazz().getBuildClass().cast(singleton);
         }
 
-        T t;
-        try {
-            // constructor from context not the injector to avoid cyclic injection
-            t = injector.context().construct(meta, injector);
-        } catch (ContextException e) {
-            throw new ScopeHandlerException("error creating instance: " + meta, e);
-        }
-
+        // constructor from context not the injector to avoid cyclic injection
+        T t = injector.context().construct(meta, injector);
         singletons.put(meta, t);
         return t;
     }
