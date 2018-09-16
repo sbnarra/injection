@@ -19,16 +19,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 class DefaultContext implements Context {
     private final Registry registry;
     private final Graph graph;
     private final ScopedContext scopedContext;
-    private final List<Meta.Field> staticFieldMetas;
-    private final List<Meta.Method> staticMethodMetas;
 
     @Override
     public <T> T get(Meta<T> meta, Injector injector) throws ContextException {
@@ -55,13 +54,7 @@ class DefaultContext implements Context {
     }
 
     @Override
-    public void initStaticMembers(Injector injector) throws ContextException {
-        injectFields(null, staticFieldMetas, injector);
-        injectMethods(null, staticMethodMetas, injector);
-    }
-
-    @Override
-    public <T> Node<?> lookup(Type<T> theType, Annotation qualifier, Annotation scope) throws ContextException {
+    public <T> Node<?> lookup(Type<T> theType, Annotation qualifier, Annotation scope, Set<Class<?>> staticsMembers) throws ContextException {
         try {
             Node<?> node = graph.find(theType,  qualifier);
             if (node != null) {
@@ -78,14 +71,14 @@ class DefaultContext implements Context {
                 } catch (Helper.HelperException e) {
                     throw new ContextException(e.getMessage());
                 }
-                return graph.addNode(selfBinding(theType), this);
+                return graph.addNode(selfBinding(theType), this, staticsMembers);
             }
 
             TypeBinding<?> typeBinding = registry.find(theType, qualifier);
             if (typeBinding == null) {
                 throw new ContextException("no binding found for: type=" + theType + ",qualifier=" + qualifier);
             }
-            return graph.addNode(typeBinding, this);
+            return graph.addNode(typeBinding, this, staticsMembers);
         } catch (GraphException e) {
             throw new ContextException("error adding node to graph during lookup: " + theType + ": qualifier: " + qualifier, e);
         }
@@ -120,20 +113,27 @@ class DefaultContext implements Context {
                     + constructor + ",args=" + Arrays.toString(args), e);
         }
 
-        injectMembers(newInstance, meta.getMembers(), meta.getStaticInjected(), injector);
+        injectMembers(newInstance, meta.getMembers(), injector);
         return newInstance;
     }
 
-    private <T> void injectMembers(T t, List<Meta.Members> members, AtomicBoolean injectStaticMembers, Injector injector) throws ContextException {
-        IntStream.range(0, members.size()).mapToObj(i -> members.get(members.size() - i - 1)) // iterate in reverse order, child to parent structure
-                .forEach(member -> {
-                    try {
-                        injectFields(t, member.getFields(), injector);
-                        injectMethods(t, member.getMethods(), injector);
-                    } catch (ContextException e) {
-                        throw e.unchecked();
-                    }
-                });
+    private <T> void injectMembers(T t, List<Meta.Members> members, Injector injector) throws ContextException {
+        try {
+            reverse(members).forEach(member -> {
+                try {
+                    injectFields(t, member.getFields(), injector);
+                    injectMethods(t, member.getMethods(), injector);
+                } catch (ContextException e) {
+                    throw e.unchecked();
+                }
+            });
+        } catch (ContextException.Unchecked e) {
+            throw e.contextException();
+        }
+    }
+
+    private <T> Stream<T> reverse(List<T> list) {
+        return IntStream.range(0, list.size()).mapToObj(i -> list.get(list.size() - i - 1));
     }
 
     private <T> void injectFields(T t, List<Meta.Field> fields, Injector injector) throws ContextException {

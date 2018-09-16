@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -18,25 +19,33 @@ class MethodBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
     void build(Class<?> theClass, Context context, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods,
-                            List<Meta.Method> methodMetas, List<Meta.Method> staticMethodMetas) throws BuilderException {
-        gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().forEach(method -> {
-            List<Meta.Parameter> parameters = null;
+                            List<Meta.Method> methodMetas, Set<Class<?>> staticsMembers) throws BuilderException {
+        try {
+            gatherMethods(theClass, publicProtectedMethods, defaultMethods).stream().forEach(buildMeta(theClass, context, methodMetas, staticsMembers));
+        } catch (BuilderException.Unchecked e) {
+            throw e.builderException();
+        }
+    }
+
+    private Consumer<Method> buildMeta(Class<?> theClass, Context context, List<Meta.Method> methodMetas, Set<Class<?>> staticsMembers) {
+        return method -> {
+            List<Meta.Parameter> parameters;
             try {
-                parameters = parametersMetaBuilder.buildParameters(method, context);
+                parameters = parametersMetaBuilder.buildParameters(method, context, staticsMembers);
             } catch (BuilderException e) {
-                e.unchecked();
+                throw e.unchecked();
             }
 
-            Meta.Method methodMeta = Meta.Method.builder()
-                    .method(method)
-                    .parameters(parameters)
-                    .build();
             if (Modifier.isStatic(method.getModifiers())) {
-                staticMethodMetas.add(methodMeta);
+                staticsMembers.add(theClass);
             } else {
+                Meta.Method methodMeta = Meta.Method.builder()
+                        .method(method)
+                        .parameters(parameters)
+                        .build();
                 methodMetas.add(methodMeta);
             }
-        });
+        };
     }
 
     private List<Method> gatherMethods(Class<?> theClass, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
@@ -52,12 +61,11 @@ class MethodBuilder {
     private Consumer<Method> gatherMethod(Package classPackage, List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) {
         return method -> {
             int modifier = method.getModifiers();
-            boolean isPublic = Modifier.isPublic(modifier);
             if (Modifier.isStatic(modifier)) {
-                addInjectMethod(method, isPublic, injectMethods);
+                addInjectMethod(method, injectMethods);
             } else {
                 try {
-                    gatherNonStatic(classPackage, method, isPublic, modifier, injectMethods, publicProtectedMethods, defaultMethods);
+                    gatherNonStatic(classPackage, method, modifier, injectMethods, publicProtectedMethods, defaultMethods);
                 } catch (BuilderException e) {
                     e.unchecked();
                 }
@@ -65,23 +73,23 @@ class MethodBuilder {
         };
     }
 
-    private void gatherNonStatic(Package classPackage, Method method, boolean isPublic, int modifier,
+    private void gatherNonStatic(Package classPackage, Method method, int modifier,
                                  List<Method> injectMethods, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods) throws BuilderException {
-        if (isPublic || Modifier.isProtected(modifier)) {
-            if (publicProtectedMethods.stream().noneMatch(publicProtectedMethod -> methodsEqual(method, publicProtectedMethod))) {
-                addInjectMethod(method, isPublic, injectMethods);
+        if (Modifier.isPublic(modifier) || Modifier.isProtected(modifier)) {
+            if (publicProtectedMethods.stream().noneMatch(publicProtectedMethod -> Members.methodsEqual(method, publicProtectedMethod))) {
+                addInjectMethod(method, injectMethods);
                 publicProtectedMethods.add(method);
             }
         } else if (Modifier.isPrivate(modifier)) {
-            addInjectMethod(method, false, injectMethods);
-        } else if (modifier == 0/*isDefault*/) {
+            addInjectMethod(method, injectMethods);
+        } else if (modifier == 0/*isDefault*/) { // todo - final?
             List<Method> packageDefaultMethods = defaultMethods.get(classPackage);
             if (packageDefaultMethods == null) {
                 defaultMethods.put(classPackage, packageDefaultMethods = new ArrayList<>());
             }
 
-            if (packageDefaultMethods.stream().noneMatch(packageDefaultMethod -> methodsEqual(method, packageDefaultMethod))) {
-                addInjectMethod(method, false, injectMethods);
+            if (packageDefaultMethods.stream().noneMatch(packageDefaultMethod -> Members.methodsEqual(method, packageDefaultMethod))) {
+                addInjectMethod(method, injectMethods);
             }
             packageDefaultMethods.add(method);
         } else {
@@ -89,27 +97,11 @@ class MethodBuilder {
         }
     }
 
-    private void addInjectMethod(Method method, boolean isPublic, List<Method> injectMethods) {
+    private void addInjectMethod(Method method, List<Method> injectMethods) {
         if (Annotations.shouldInject(method)) {
             method.setAccessible(true);
             injectMethods.add(method);
         }
     }
 
-    private boolean methodsEqual(Method m1, Method m2) {
-        return m1.getName().equals(m2.getName()) &&
-                m1.getReturnType().isAssignableFrom(m2.getReturnType()) &&
-                parametersEqual(m1.getParameterTypes(), m2.getParameterTypes());
-    }
-
-    private boolean parametersEqual(Class<?>[] params1, Class<?>[] params2) {
-        if (params1.length == params2.length) {
-            for (int i = 0; i < params1.length; i++) {
-                if (params1[i] != params2[i])
-                    return false;
-            }
-            return true;
-        }
-        return false;
-    }
 }

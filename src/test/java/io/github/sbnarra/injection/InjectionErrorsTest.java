@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 public class InjectionErrorsTest {
+
     @Test
     public void interfaceBinding() {
         try {

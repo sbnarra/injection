@@ -7,6 +7,7 @@ import io.github.sbnarra.injection.registry.TypeBinding;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class MetaBuilder {
@@ -16,7 +17,7 @@ public class MetaBuilder {
     private final MembersBuilder membersBuilder;
     private final AspectBuilder aspectBuilder;
 
-    public <T> Meta<T> build(TypeBinding<T> binding, Context context, List<Meta.Field> staticFieldMetas, List<Meta.Method> staticMethodMetas) throws BuilderException {
+    public <T> Meta<T> build(TypeBinding<T> binding, Context context,  Set<Class<?>> staticsMembers) throws BuilderException {
         Meta.MetaBuilder<T> builder = Meta.builder();
         Meta.Class<T> classMeta;
 
@@ -28,8 +29,8 @@ public class MetaBuilder {
                 Type<?> type = binding.getType();
                 List<Meta.Aspect> aspectMetas = aspectBuilder.build(type.getTheClass(), context.registry().getInterceptionBindings());
                 classMeta = classBuilder.build(binding, aspectMetas);
-                builder.constructor(constructorBuilder.build(classMeta, context))
-                        .members(membersBuilder.build(classMeta.getContractClass(), context, staticFieldMetas, staticMethodMetas))
+                builder.constructor(constructorBuilder.build(classMeta, context, staticsMembers))
+                        .members(membersBuilder.build(classMeta.getContractClass(), context, staticsMembers))
                         .aspect(aspectMetas);
             }
         } catch (BuilderException e) {

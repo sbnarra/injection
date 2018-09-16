@@ -16,7 +16,11 @@ import org.atinject.tck.auto.accessories.SpareTire;
 
 public class Jsr330TckTest {
     public static Test suite() throws InjectException {
-        return Tck.testsFor(InjectorFactory.create(new Registration() {
+        return Tck.testsFor(car(), true, true);
+    }
+
+    private static Car car() throws InjectException {
+        return InjectorFactory.create(new Registration() {
             @Override
             public void register() throws RegistryException {
                 bind(Car.class).with(Convertible.class);
@@ -24,6 +28,6 @@ public class Jsr330TckTest {
                 bind(Tire.class).named("spare").with(SpareTire.class);
                 bind(Seat.class).qualified( Drivers.class).with(DriversSeat.class);
             }
-        }).get(Car.class), true, true);
+        }).get(Car.class);
     }
 }

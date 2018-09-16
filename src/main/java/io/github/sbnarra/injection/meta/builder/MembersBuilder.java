@@ -9,24 +9,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class MembersBuilder {
     private final MethodBuilder methodBuilder;
     private final FieldBuilder fieldBuilder;
 
-    List<Meta.Members> build(Class<?> theClass, Context context, List<Meta.Field> staticFieldMetas, List<Meta.Method> staticMethodMetas) throws BuilderException {
+    List<Meta.Members> build(Class<?> theClass, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         List<Meta.Members> members = new ArrayList<>();
-        build(theClass, context, members, new ArrayList<>(), new HashMap<>(), staticFieldMetas, staticMethodMetas);
+        build(theClass, context, members, new ArrayList<>(), new HashMap<>(), staticsMembers);
         return members;
     }
 
-    private void build(Class<?> theClass, Context context, List<Meta.Members> members, List<Method> publicProtectedMethods, Map<Package, List<Method>> defaultMethods,
-                       List<Meta.Field> staticFieldMetas, List<Meta.Method> staticMethodMetas) throws BuilderException {
+    private void build(Class<?> theClass, Context context, List<Meta.Members> members, List<Method> publicProtectedMethods,
+                       Map<Package, List<Method>> defaultMethods, Set<Class<?>> staticsMembers) throws BuilderException {
+
         List<Meta.Field> fieldsMetas = new ArrayList<>();
-        fieldBuilder.build(theClass, context, fieldsMetas, staticFieldMetas);
+        fieldBuilder.build(theClass, context, fieldsMetas, staticsMembers);
+
         List<Meta.Method> methodMetas = new ArrayList<>();
-        methodBuilder.build(theClass, context, publicProtectedMethods, defaultMethods, methodMetas, staticMethodMetas);
+        methodBuilder.build(theClass, context, publicProtectedMethods, defaultMethods, methodMetas, staticsMembers);
 
         if (!fieldsMetas.isEmpty() || !methodMetas.isEmpty()) {
             Meta.Members membersMeta = Meta.Members.builder()
@@ -38,7 +41,7 @@ public class MembersBuilder {
 
         Class<?> superclass = theClass.getSuperclass();
         if (!Object.class.equals(superclass)) {
-            build(superclass, context, members, publicProtectedMethods, defaultMethods, staticFieldMetas, staticMethodMetas);
+            build(superclass, context, members, publicProtectedMethods, defaultMethods, staticsMembers);
         }
     }
 }

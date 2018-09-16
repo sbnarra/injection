@@ -8,6 +8,7 @@ import io.github.sbnarra.injection.context.DefaultProvider;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
 
 @RequiredArgsConstructor
 public class DefaultInjector implements Injector {
@@ -21,7 +22,7 @@ public class DefaultInjector implements Injector {
         }
 
         try {
-            return context.get(type, qualifier, scope, this);
+            return context.get(type, qualifier, scope, this, new HashSet<>());
         } catch (ContextException e) {
             throw new InjectException("failed to get: " + type, e);
         }

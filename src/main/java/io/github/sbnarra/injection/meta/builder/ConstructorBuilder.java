@@ -8,14 +8,15 @@ import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 class ConstructorBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
-    <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context) throws BuilderException {
+    <T> Meta.Constructor<T> build(Meta.Class<T> classMeta, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         Constructor<? extends T> constructor = find(classMeta);
-        List<Meta.Parameter> fieldMeta = parametersMetaBuilder.buildParameters(constructor, context);
+        List<Meta.Parameter> fieldMeta = parametersMetaBuilder.buildParameters(constructor, context, staticsMembers);
 
         constructor.setAccessible(true);
         return Meta.Constructor.<T>builder()

@@ -36,7 +36,6 @@ public abstract class Type<T> {
 
     private static Parameterized initType(java.lang.reflect.Type type) {
         if (Class.class.isInstance(type)) {
-            Debug.log(type);
             return handleClassType(Class.class.cast(type));
         } else if (ParameterizedType.class.isInstance(type)) {
             return handleParameterizedType(ParameterizedType.class.cast(type));

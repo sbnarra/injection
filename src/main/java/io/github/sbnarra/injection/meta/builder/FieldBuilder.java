@@ -11,17 +11,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 class FieldBuilder {
     private final ParametersMetaBuilder parametersMetaBuilder;
 
-    void build(Class<?> theClass, Context context, List<Meta.Field> fields, List<Meta.Field> staticFieldMetas) throws BuilderException {
+    void build(Class<?> theClass, Context context, List<Meta.Field> fields, Set<Class<?>> staticsMembers) throws BuilderException {
         for (Field field : theClass.getDeclaredFields()) {
             if (field.getAnnotation(Inject.class) != null) {
-                Meta.Field fieldMeta = createFieldMeta(field, context);
+                Meta.Field fieldMeta = createFieldMeta(field, context, staticsMembers);
                 if (Modifier.isStatic(field.getModifiers())) {
-                    staticFieldMetas.add(fieldMeta);
+                    staticsMembers.add(theClass);
                 } else {
                     fields.add(fieldMeta);
                 }
@@ -29,7 +30,7 @@ class FieldBuilder {
         }
     }
 
-    private Meta.Field createFieldMeta(Field field, Context context) throws BuilderException {
+    private Meta.Field createFieldMeta(Field field, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         if (!Modifier.isPublic(field.getModifiers())) {
             field.setAccessible(true);
         }
@@ -42,7 +43,7 @@ class FieldBuilder {
             throw new BuilderException("error finding qualifier", e);
         }
 
-        Meta.Parameter parameter = parametersMetaBuilder.buildParameter(field, field.getGenericType(), qualifier, scope, context);
+        Meta.Parameter parameter = parametersMetaBuilder.buildParameter(field, field.getGenericType(), qualifier, scope, context, staticsMembers);
         return Meta.Field.builder()
                 .field(field)
                 .parameter(parameter)

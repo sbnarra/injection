@@ -1,11 +1,8 @@
 package io.github.sbnarra.injection.registry;
 
-import io.github.sbnarra.injection.core.Debug;
 import io.github.sbnarra.injection.core.Type;
 import lombok.Getter;
 import lombok.ToString;
-import org.atinject.tck.auto.Seat;
-import org.atinject.tck.auto.Tire;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;

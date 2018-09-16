@@ -17,12 +17,13 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 class ParametersMetaBuilder {
     private final InjectBuilder injectBuilder;
 
-    List<Meta.Parameter> buildParameters(Executable executable, Context context) throws BuilderException {
+    List<Meta.Parameter> buildParameters(Executable executable, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         List<Meta.Parameter> metas = new ArrayList<>();
         java.lang.reflect.Parameter[] parameters = executable.getParameters();
 
@@ -36,7 +37,7 @@ class ParametersMetaBuilder {
             } catch (AnnotationsException e) {
                 throw new BuilderException("error finding qualifier", e);
             }
-            metas.add(buildParameter(type, type.getParameterizedType(), qualifier, scope, context));
+            metas.add(buildParameter(type, type.getParameterizedType(), qualifier, scope, context, staticsMembers));
         }
 
         if (executable.getParameterCount() != metas.size()) {
@@ -46,7 +47,8 @@ class ParametersMetaBuilder {
         return metas;
     }
 
-    <T> Meta.Parameter buildParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier, Annotation scope, Context context) throws BuilderException {
+    <T> Meta.Parameter buildParameter(AnnotatedElement annotatedElement, java.lang.reflect.Type type, Annotation qualifier,
+                                      Annotation scope, Context context, Set<Class<?>> staticsMembers) throws BuilderException {
         Type<?> paramType = new Type<Object>(type) {};
 
         if (paramType.isProvider()) {
@@ -66,7 +68,7 @@ class ParametersMetaBuilder {
             Meta.InstanceParameter.Builder builder = Meta.InstanceParameter.builder();
             Node<?> node;
             try {
-                node = context.lookup(paramType, qualifier, scope);
+                node = context.lookup(paramType, qualifier, scope, staticsMembers);
             } catch (ContextException e) {
                 throw new BuilderException("error looking up type: " + type + ": qualifier: " + qualifier, e);
             }

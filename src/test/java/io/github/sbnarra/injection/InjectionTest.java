@@ -1,6 +1,5 @@
 package io.github.sbnarra.injection;
 
-import io.github.sbnarra.injection.core.Debug;
 import io.github.sbnarra.injection.core.Type;
 import io.github.sbnarra.injection.registry.Registration;
 import io.github.sbnarra.injection.registry.RegistryException;
@@ -51,7 +50,6 @@ public class InjectionTest {
         ExampleMembers exampleMembers = injector.get(ExampleMembers.class);
         Assertions.assertEquals(strOne, exampleMembers.fieldParam);
         Assertions.assertEquals(strTwo, exampleMembers.constructorParam);
-        Debug.log(exampleMembers);
         Assertions.assertEquals(strThree, exampleMembers.methodParam);
     }
 
