@@ -1,7 +1,5 @@
 [![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=master)](https://travis-ci.org/sbnarra/injection) [![Coverage Status](https://coveralls.io/repos/github/sbnarra/injection/badge.svg?branch=master)](https://coveralls.io/github/sbnarra/injection?branch=master) master
 
-[![Build Status](https://travis-ci.org/sbnarra/injection.svg?branch=initial_wip)](https://travis-ci.org/sbnarra/injection) [![Coverage Status](https://coveralls.io/repos/github/sbnarra/injection/badge.svg?branch=initial_wip)](https://coveralls.io/github/sbnarra/injection?branch=initial_wip) initial work in progress branch
-
 # An Injection Framework
 
 Quite simply, this is an implementation of the `javax.inject` classes as per the [JSR-330](http://javax-inject.github.io/javax-inject/) spec.
